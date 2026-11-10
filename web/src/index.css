@@ -1,0 +1,163 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/plus-jakarta-sans';
+@import 'tailwindcss';
+
+/*
+  Design system Hub+ "Workspace" (docs/DECISIONS.md, D11).
+  Tema claro por padrão. O roxo é a única cor de ação; o laranja marca progresso e destaques.
+  O protótipo aprovado está em docs/design/mockup-workspace.html.
+*/
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  color-scheme: light;
+  --background: #f4f3f9;
+  --surface: #ffffff;
+  --faint: #f8f7fc;
+  --card: #ffffff;
+  --card-foreground: #17141f;
+  --foreground: #17141f;
+  --muted: #efeaf7;
+  --muted-foreground: #6e6880;
+  --border: #e6e3ef;
+  --input: #dcd7e8;
+  --ring: #5900b0;
+
+  --primary: #5900b0;
+  --primary-hover: #4a0094;
+  --primary-foreground: #ffffff;
+  --primary-soft: #efe6fa;
+
+  --orange: #f26303;
+  --orange-soft: #fde9dc;
+  --sand-soft: #fbebd7;
+  --lilac-soft: #ece6f8;
+  --mint-soft: #ddf3ea;
+
+  --success: #15803d;
+  --warning: #b45309;
+  --destructive: #b91c1c;
+  --video: #120e1a;
+}
+
+:root.dark {
+  color-scheme: dark;
+  --background: #0f0c16;
+  --surface: #17131f;
+  --faint: #1d1828;
+  --card: #17131f;
+  --card-foreground: #f2eef8;
+  --foreground: #f2eef8;
+  --muted: #221b30;
+  --muted-foreground: #a49cb8;
+  --border: rgb(255 255 255 / 0.09);
+  --input: rgb(255 255 255 / 0.16);
+  --ring: #9c66f0;
+
+  --primary: #9c66f0;
+  --primary-hover: #ae80f5;
+  --primary-foreground: #0f0c16;
+  --primary-soft: rgb(156 102 240 / 0.16);
+
+  --orange-soft: rgb(242 99 3 / 0.18);
+  --sand-soft: rgb(243 204 159 / 0.14);
+  --lilac-soft: rgb(156 102 240 / 0.14);
+  --mint-soft: rgb(16 185 129 / 0.16);
+
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --destructive: #f87171;
+  --video: #000000;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-faint: var(--faint);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-orange: var(--orange);
+  --color-orange-soft: var(--orange-soft);
+  --color-sand-soft: var(--sand-soft);
+  --color-lilac-soft: var(--lilac-soft);
+  --color-mint-soft: var(--mint-soft);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-video: var(--video);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: 'Plus Jakarta Sans Variable', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  [hidden] {
+    display: none !important;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  details > summary {
+    list-style: none;
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

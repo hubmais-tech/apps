@@ -1,0 +1,16 @@
+name: hubmais
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: hubmais
+    ports:
+      - '5959:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

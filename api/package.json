@@ -1,0 +1,38 @@
+{
+  "name": "hubmais-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.15.1",
+  "scripts": {
+    "dev": "tsx watch --env-file .env src/http/server.ts",
+    "build": "tsc --noEmit",
+    "start": "tsx --env-file .env src/http/server.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx --env-file .env src/database/seed.ts",
+    "test": "node --env-file .env node_modules/vitest/vitest.mjs run"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.937.0",
+    "@aws-sdk/s3-request-presigner": "^3.937.0",
+    "@casl/ability": "^6.7.3",
+    "@fastify/cors": "^11.1.0",
+    "@fastify/jwt": "^10.0.0",
+    "@fastify/rate-limit": "^10.3.0",
+    "drizzle-orm": "^0.44.7",
+    "fastify": "^5.6.1",
+    "fastify-plugin": "^5.1.0",
+    "fastify-type-provider-zod": "^6.1.0",
+    "postgres": "^3.4.7",
+    "stripe": "^19.3.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "drizzle-kit": "^0.31.6",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

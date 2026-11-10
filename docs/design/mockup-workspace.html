@@ -1,0 +1,1176 @@
+<title>Hub+ Workspace</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap">
+<style>
+  /* Layout: shell de produto. Sidebar fixa de 256px + topo + conteúdo em grid de 12 colunas. Claro por padrão. */
+  :root {
+    --bg: #F4F3F9;
+    --surface: #FFFFFF;
+    --faint: #F8F7FC;
+    --line: #E6E3EF;
+    --ink: #17141F;
+    --muted: #6E6880;
+    --accent: #5900B0;
+    --accent-hover: #4A0094;
+    --accent-soft: #EFE6FA;
+    --on-accent: #FFFFFF;
+    --orange: #F26303;
+    --orange-soft: #FDE9DC;
+    --sand-soft: #FBEBD7;
+    --lilac-soft: #ECE6F8;
+    --mint-soft: #DDF3EA;
+    --ok: #15803D;
+    --warn: #B45309;
+    --bad: #B91C1C;
+    --video: #120E1A;
+    --r: 12px;
+    --r-sm: 8px;
+    --font-head: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0F0C16; --surface: #17131F; --faint: #1D1828; --line: rgba(255,255,255,.09);
+      --ink: #F2EEF8; --muted: #A49CB8;
+      --accent: #9C66F0; --accent-hover: #AE80F5; --accent-soft: rgba(156,102,240,.16); --on-accent: #0F0C16;
+      --orange-soft: rgba(242,99,3,.18); --sand-soft: rgba(243,204,159,.14); --lilac-soft: rgba(156,102,240,.14); --mint-soft: rgba(16,185,129,.16);
+      --ok: #4ADE80; --warn: #FBBF24; --bad: #F87171; --video: #000;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0F0C16; --surface: #17131F; --faint: #1D1828; --line: rgba(255,255,255,.09);
+    --ink: #F2EEF8; --muted: #A49CB8;
+    --accent: #9C66F0; --accent-hover: #AE80F5; --accent-soft: rgba(156,102,240,.16); --on-accent: #0F0C16;
+    --orange-soft: rgba(242,99,3,.18); --sand-soft: rgba(243,204,159,.14); --lilac-soft: rgba(156,102,240,.14); --mint-soft: rgba(16,185,129,.16);
+    --ok: #4ADE80; --warn: #FBBF24; --bad: #F87171; --video: #000;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-body); -webkit-font-smoothing: antialiased; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--ink); }
+  h1, h2, h3 { font-family: var(--font-head); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  h1 { font-size: 24px; font-weight: 700; }
+  h2 { font-size: 16px; font-weight: 700; }
+  h3 { font-size: 14px; font-weight: 600; }
+  p { margin: 0; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .muted { color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+  /* Barra do protótipo */
+  .mockbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--ink); color: var(--bg); padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); font-size: 12px; }
+  .mockbar strong { font-weight: 600; margin-right: 6px; }
+  .seg { display: inline-flex; background: rgba(255,255,255,.12); border-radius: var(--r-sm); padding: 2px; gap: 2px; }
+  .seg button { border: 0; background: transparent; color: inherit; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .seg button[aria-pressed="true"] { background: var(--bg); color: var(--ink); }
+  .mockbar .spacer { flex: 1; }
+  .mockbar .ghost { border: 1px solid rgba(255,255,255,.25); background: transparent; color: inherit; padding: 5px 10px; border-radius: 6px; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; }
+
+  /* Shell */
+  .app { display: grid; grid-template-columns: 256px minmax(0, 1fr); min-height: calc(100% - 38px); }
+  .app[hidden], .auth[hidden] { display: none; }
+  .side { background: var(--surface); border-right: 1px solid var(--line); padding: 20px 16px; display: flex; flex-direction: column; gap: 22px; position: sticky; top: calc(38px + env(safe-area-inset-top, 0px)); height: calc(100dvh - 38px - env(safe-area-inset-top, 0px)); overflow-y: auto; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px; }
+  .brand .mark { width: 32px; height: 32px; border-radius: 9px; background: var(--orange); color: #fff; display: grid; place-items: center; font: 700 12px var(--font-head); letter-spacing: -.03em; }
+  .brand b { font: 700 17px var(--font-head); }
+  .nav-group { display: flex; flex-direction: column; gap: 2px; }
+  .nav-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 12px 8px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px; border-radius: var(--r-sm); color: var(--muted); font-weight: 500; text-decoration: none; border: 0; background: transparent; width: 100%; text-align: left; position: relative; }
+  .nav-item:hover { background: var(--faint); color: var(--ink); }
+  .nav-item[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .nav-item[aria-current="page"]::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); }
+  .nav-item .count { margin-left: auto; font-size: 11px; font-weight: 600; background: var(--orange); color: #fff; border-radius: 999px; min-width: 18px; height: 18px; display: grid; place-items: center; padding: 0 5px; }
+  .side .grow { flex: 1; }
+  .upsell { background: var(--sand-soft); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .upsell h3 { font-size: 13px; }
+  .upsell p { font-size: 12px; color: var(--muted); }
+  .user { display: flex; align-items: center; gap: 10px; padding: 8px; border-top: 1px solid var(--line); }
+  .user .meta { min-width: 0; line-height: 1.25; }
+  .user .meta b { display: block; font-size: 13px; }
+  .user .meta span { font-size: 12px; color: var(--muted); }
+
+  .main { min-width: 0; display: flex; flex-direction: column; }
+  .top { display: flex; align-items: center; gap: 14px; padding: 14px max(24px, env(safe-area-inset-right, 0px)) 14px max(24px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); background: var(--surface); }
+  .top .title { min-width: 0; flex: 1; line-height: 1.25; }
+  .top .title h1 { font-size: 20px; }
+  .top .title p { font-size: 13px; color: var(--muted); }
+  .crumbs { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+  .crumbs b { color: var(--ink); font-weight: 600; }
+  .search { display: flex; align-items: center; gap: 8px; height: 38px; width: 260px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--faint); color: var(--muted); }
+  .search kbd { margin-left: auto; font: 11px var(--font-body); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+  .iconbtn { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); position: relative; }
+  .iconbtn .dot { position: absolute; top: 8px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); border: 2px solid var(--surface); }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 12px; background: var(--lilac-soft); color: var(--accent); flex: none; }
+  .avatar.sm { width: 26px; height: 26px; font-size: 10px; }
+  .avatar.lg { width: 40px; height: 40px; font-size: 13px; }
+
+  .content { padding: 24px max(24px, env(safe-area-inset-right, 0px)) 96px max(24px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; align-content: start; }
+  .span-12 { grid-column: 1 / -1; } .span-8 { grid-column: span 8; } .span-4 { grid-column: span 4; } .span-7 { grid-column: span 7; } .span-5 { grid-column: span 5; }
+  .stack { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+  .card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+  .card-h .link { font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+  .card-b { padding: 18px; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: var(--r-sm); border: 1px solid transparent; font-weight: 600; font-size: 13px; text-decoration: none; white-space: nowrap; transition: background .15s; }
+  .btn-primary { background: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary { background: var(--surface); border-color: var(--line); color: var(--ink); }
+  .btn-secondary:hover { background: var(--faint); }
+  .btn-soft { background: var(--accent-soft); color: var(--accent); }
+  .btn-block { width: 100%; }
+  .btn-sm { height: 32px; padding: 0 10px; font-size: 12px; }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+  .chip { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 6px; font-size: 12px; font-weight: 500; background: var(--faint); color: var(--muted); border: 1px solid var(--line); }
+  .pill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .pill-ok { background: var(--mint-soft); color: var(--ok); }
+  .pill-warn { background: var(--sand-soft); color: var(--warn); }
+  .pill-acc { background: var(--accent-soft); color: var(--accent); }
+  .pill-orange { background: var(--orange-soft); color: var(--orange); }
+  .pill-muted { background: var(--faint); color: var(--muted); border: 1px solid var(--line); }
+
+  /* Tiles de estatística */
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  .kpi { padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .kpi .lbl { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); }
+  .kpi .lbl .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; }
+  .kpi .val { font: 600 26px/1.1 var(--font-head); font-variant-numeric: tabular-nums; }
+  .kpi .sub { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .up { color: var(--ok); font-weight: 600; }
+  .bars { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
+  .bars i { flex: 1; background: var(--accent-soft); border-radius: 2px 2px 0 0; }
+  .bars i.on { background: var(--accent); }
+
+  /* Progresso */
+  .prog { height: 6px; border-radius: 999px; background: var(--faint); border: 1px solid var(--line); overflow: hidden; }
+  .prog > i { display: block; height: 100%; border-radius: 999px; background: var(--orange); }
+  .prog.acc > i { background: var(--accent); }
+
+  /* Continuar estudando */
+  .resume { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 18px; padding: 18px; align-items: center; }
+  .thumb { aspect-ratio: 16/10; border-radius: var(--r-sm); position: relative; overflow: hidden; display: grid; place-items: center; }
+  .thumb .play { width: 42px; height: 42px; border-radius: 50%; background: var(--surface); color: var(--accent); display: grid; place-items: center; box-shadow: 0 2px 8px rgba(23,20,31,.15); }
+  .thumb .tag { position: absolute; left: 10px; top: 10px; }
+  .cover-a { background: var(--lilac-soft); }
+  .cover-b { background: var(--sand-soft); }
+  .cover-c { background: var(--mint-soft); }
+  .cover-d { background: var(--orange-soft); }
+  .cover-art { position: absolute; inset: 0; opacity: .9; }
+  .resume .info { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .resume .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--muted); }
+  .resume .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* Cards de curso */
+  .courses { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .course { overflow: hidden; display: flex; flex-direction: column; }
+  .course .thumb { border-radius: 0; aspect-ratio: 16/9; }
+  .course .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .course h3 { font-size: 15px; line-height: 1.3; }
+  .course .mentor { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .course .meta { display: flex; gap: 12px; font-size: 12px; color: var(--muted); }
+  .course .meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .course .foot { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 6px; }
+  .course .price { font: 600 16px var(--font-head); font-variant-numeric: tabular-nums; }
+
+  /* Listas */
+  .list { display: flex; flex-direction: column; }
+  .list > li, .list > .row { list-style: none; display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-top: 1px solid var(--line); }
+  .list > li:first-child, .list > .row:first-child { border-top: 0; }
+  .list { margin: 0; padding: 0; }
+  .ic { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; flex: none; }
+  .ic-acc { background: var(--accent-soft); color: var(--accent); }
+  .ic-orange { background: var(--orange-soft); color: var(--orange); }
+  .ic-ok { background: var(--mint-soft); color: var(--ok); }
+  .ic-sand { background: var(--sand-soft); color: var(--warn); }
+  .ic-muted { background: var(--faint); color: var(--muted); border: 1px solid var(--line); }
+  .ic-bad { background: rgba(185,28,28,.12); color: var(--bad); }
+  .list .txt { min-width: 0; flex: 1; line-height: 1.3; }
+  .list .txt b { display: block; font-weight: 600; font-size: 13px; }
+  .list .txt span { font-size: 12px; color: var(--muted); }
+  .amount { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; line-height: 1.3; }
+  .amount small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+  .amount.pos { color: var(--ok); }
+
+  /* Checklist do caminho */
+  .path li { align-items: flex-start; }
+  .step { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none; margin-top: 1px; font-size: 11px; font-weight: 600; }
+  .step.done { background: var(--ok); color: #fff; }
+  .step.now { background: var(--orange); color: #fff; }
+  .step.todo { border: 1.5px solid var(--line); color: var(--muted); }
+
+  /* Player */
+  .lesson-head { display: flex; flex-direction: column; gap: 10px; }
+  .lesson-head .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .video { aspect-ratio: 16/9; border-radius: var(--r); background: var(--video); position: relative; overflow: hidden; display: grid; place-items: center; color: #fff; }
+  .video .play { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3); display: grid; place-items: center; backdrop-filter: blur(6px); }
+  .video .play svg { width: 26px; height: 26px; }
+  .video .bar { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(to top, rgba(0,0,0,.55), transparent); font-size: 12px; }
+  .video .bar .row { display: flex; justify-content: space-between; }
+  .video .track { height: 4px; background: rgba(255,255,255,.25); border-radius: 999px; }
+  .video .track i { display: block; height: 100%; width: 38%; background: var(--orange); border-radius: 999px; position: relative; }
+  .video .track i::after { content: ""; position: absolute; right: -6px; top: -4px; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+  .video .slide { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 48px; opacity: .28; }
+  .video .slide i { border-radius: 10px; background: linear-gradient(135deg, var(--accent), transparent 70%); }
+  .video .slide i:nth-child(2) { background: linear-gradient(225deg, var(--orange), transparent 70%); }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); padding: 0 18px; }
+  .tabs button { border: 0; background: transparent; padding: 12px 10px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tabs button[aria-selected="true"] { color: var(--accent); border-color: var(--accent); font-weight: 600; }
+  .prose { display: flex; flex-direction: column; gap: 12px; max-width: 65ch; }
+  .prose ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+  .callout { background: var(--sand-soft); border-radius: var(--r); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+  .callout b { display: block; font-size: 13px; }
+  .callout p { font-size: 13px; color: var(--muted); }
+  .modules { display: flex; flex-direction: column; gap: 8px; padding: 12px; }
+  .mod { border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); }
+  .mod summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; }
+  .mod summary::-webkit-details-marker { display: none; }
+  .mod summary .txt { flex: 1; line-height: 1.25; min-width: 0; }
+  .mod summary .txt b { font-size: 13px; display: block; }
+  .mod summary .txt span { font-size: 12px; color: var(--muted); }
+  .mod summary .chev { transition: transform .15s; color: var(--muted); }
+  .mod[open] summary .chev { transform: rotate(180deg); }
+  .mod[open] { border-color: var(--accent); }
+  .mod.locked { opacity: .6; }
+  .mod .st { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .mod .st svg { width: 14px; height: 14px; }
+  .st-done { background: var(--ok); color: #fff; }
+  .st-now { background: var(--accent); color: var(--on-accent); }
+  .st-lock { background: var(--faint); color: var(--muted); border: 1px solid var(--line); }
+  .st-todo { border: 1.5px solid var(--line); color: var(--muted); }
+  .lessons { margin: 0; padding: 4px 8px 8px; list-style: none; display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--line); }
+  .lessons li { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 6px; font-size: 13px; }
+  .lessons li.now { background: var(--accent-soft); font-weight: 600; color: var(--accent); }
+  .lessons li .t { flex: 1; min-width: 0; }
+  .lessons li .d { font-size: 12px; color: var(--muted); }
+  .lessons li .mini { width: 70px; }
+  .side-actions { padding: 12px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+
+  /* Carteira */
+  .mini-bars { display: flex; flex-direction: column; gap: 12px; }
+  .mini-bars .row { display: grid; grid-template-columns: 170px 1fr 60px; gap: 12px; align-items: center; font-size: 13px; }
+  .mini-bars .row .v { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .pix { display: flex; flex-direction: column; gap: 12px; }
+  .pix .key { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--r-sm); font-size: 13px; }
+  .pix .key code { font: 12px ui-monospace, Menlo, monospace; }
+  .note { font-size: 12px; color: var(--muted); }
+
+  /* Barra inferior (celular) */
+  .tabbar { display: none; }
+
+  @media (max-width: 1100px) {
+    .span-8, .span-4, .span-7, .span-5, .span-3, .span-9 { grid-column: 1 / -1; }
+    .courses { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .auth { grid-template-columns: minmax(0, 1fr); }
+    .auth-art { display: none; }
+  }
+  @media (max-width: 860px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .side { display: none; }
+    .search { display: none; }
+    .top { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+    .top .title { flex: 1 1 100%; }
+    .top .chip { display: none; }
+    .content { padding: 16px max(16px, env(safe-area-inset-right, 0px)) 100px max(16px, env(safe-area-inset-left, 0px)); gap: 16px; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .kpi .val { font-size: 22px; }
+    .resume { grid-template-columns: 1fr; }
+    .mini-bars .row { grid-template-columns: 1fr; gap: 6px; }
+    .mini-bars .row .v { text-align: left; }
+    body.no-tabbar .tabbar { display: none; }
+    body.no-tabbar .content, body.no-tabbar .auth-form { padding-bottom: 32px; }
+    .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); }
+    .tabbar button { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; border-radius: 8px; font-size: 11px; font-weight: 500; color: var(--muted); }
+    .tabbar button[aria-current="page"] { color: var(--accent); font-weight: 600; }
+    .tabbar button[aria-current="page"] svg { background: var(--accent-soft); border-radius: 8px; padding: 3px; width: 26px; height: 26px; }
+  }
+  @media (max-width: 560px) {
+    .courses { grid-template-columns: 1fr; }
+    .top .title h1 { font-size: 17px; }
+    .talents { grid-template-columns: 1fr; }
+    .fgrid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Cadastro (tela dividida) ---------- */
+  .auth { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: calc(100dvh - 38px); background: var(--surface); }
+  .auth-form { display: flex; flex-direction: column; padding: 28px max(24px, env(safe-area-inset-left, 0px)) 28px max(24px, env(safe-area-inset-left, 0px)); gap: 24px; }
+  .auth-body { width: 100%; max-width: 440px; margin: auto; display: flex; flex-direction: column; gap: 24px; }
+  .auth-body h1 { font-size: 28px; line-height: 1.2; }
+  .auth-body .lead { color: var(--muted); font-size: 15px; margin-top: 6px; }
+  .stepper { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; }
+  .stepper li { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 500; color: var(--muted); }
+  .stepper li::before { content: ""; height: 4px; border-radius: 999px; background: var(--line); }
+  .stepper li.done::before, .stepper li.now::before { background: var(--accent); }
+  .stepper li.now { color: var(--ink); font-weight: 600; }
+  .roles { display: flex; flex-direction: column; gap: 10px; border: 0; padding: 0; margin: 0; }
+  .role { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r); cursor: pointer; background: var(--surface); }
+  .role:hover { background: var(--faint); }
+  .role:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .role:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .role input { position: absolute; opacity: 0; pointer-events: none; }
+  .role .txt { flex: 1; line-height: 1.35; }
+  .role .txt b { display: block; font-size: 14px; }
+  .role .txt span { font-size: 13px; color: var(--muted); }
+  .role .radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line); flex: none; display: grid; place-items: center; }
+  .role:has(input:checked) .radio { border-color: var(--accent); background: var(--accent); }
+  .role:has(input:checked) .radio::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--on-accent); }
+  .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; }
+  .field small { font-weight: 400; font-size: 12px; color: var(--muted); }
+  .field.full { grid-column: 1 / -1; }
+  .input { height: 42px; border: 1px solid var(--line); border-radius: var(--r-sm); padding: 0 12px; background: var(--surface); color: var(--ink); font: 14px var(--font-body); width: 100%; }
+  .input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+  select.input { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) 18px, calc(100% - 13px) 18px; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 32px; }
+  .toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+  .toggle { height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+  .toggle:hover { background: var(--faint); }
+  .toggle[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .form-actions { display: flex; gap: 10px; }
+  .form-actions .btn { height: 44px; }
+  .form-actions .btn-primary { flex: 1; }
+  .auth-foot { text-align: center; font-size: 13px; color: var(--muted); }
+  .auth-foot a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .auth-art { background: var(--accent-soft); position: relative; overflow: hidden; display: grid; place-items: center; padding: 40px; }
+  .auth-art .photo { width: min(100%, 420px); aspect-ratio: 4/5; border-radius: 20px; border: 1.5px dashed var(--accent); background: var(--surface); position: relative; display: grid; place-items: center; text-align: center; padding: 24px; color: var(--muted); font-size: 12px; }
+  .auth-art .photo svg { width: 120px; height: 120px; opacity: .5; color: var(--accent); }
+  .auth-art .quote { position: absolute; left: 16px; right: 16px; bottom: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; text-align: left; box-shadow: 0 8px 24px rgba(23,20,31,.1); color: var(--ink); font-size: 14px; }
+  .auth-art .quote footer { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .auth-art .quote footer b { display: block; color: var(--ink); font-size: 13px; }
+  .auth-stats { position: absolute; top: 24px; right: 24px; display: flex; gap: 8px; }
+
+  /* ---------- Catálogo ---------- */
+  .span-3 { grid-column: span 3; } .span-9 { grid-column: span 9; }
+  .filters { position: sticky; top: calc(38px + env(safe-area-inset-top, 0px) + 16px); align-self: start; }
+  .filters summary { list-style: none; }
+  .filters summary::-webkit-details-marker { display: none; }
+  .fsec { padding: 16px 18px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+  .fsec h3 { font-size: 13px; }
+  .check { display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; }
+  .check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+  .check .n { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .cat-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .cat-tabs::-webkit-scrollbar { display: none; }
+  .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .toolbar .sel { width: auto; min-width: 190px; }
+  .pager { display: flex; justify-content: center; gap: 6px; }
+  .pager button { min-width: 36px; height: 36px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--surface); font-weight: 500; }
+  .pager button[aria-current="page"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+  .featured { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 20px; align-items: center; padding: 20px; background: var(--accent-soft); border-color: transparent; }
+  .featured h2 { font-size: 20px; }
+  .featured p { color: var(--muted); max-width: 52ch; margin-top: 6px; }
+  .featured .thumb { aspect-ratio: 4/3; }
+  .rating { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; font-size: 12px; color: var(--ink); }
+  .rating svg { color: var(--orange); fill: var(--orange); width: 14px; height: 14px; }
+
+  /* ---------- Banco de Talentos (visão da empresa) ---------- */
+  .planbar { display: flex; align-items: center; gap: 16px; padding: 14px 18px; flex-wrap: wrap; }
+  .planbar .seal { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; }
+  .planbar .seal i { width: 22px; height: 22px; border-radius: 50%; background: #C98A4B; display: block; border: 2px solid var(--sand-soft); box-shadow: 0 0 0 1px #C98A4B; }
+  .planbar .meter { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); }
+  .talents { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .talent { padding: 16px; display: flex; flex-direction: column; gap: 12px; text-align: left; background: var(--surface); width: 100%; cursor: pointer; }
+  .talent:hover { border-color: var(--accent); }
+  .talent[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .talent .head { display: flex; gap: 12px; align-items: center; }
+  .talent .head .who { min-width: 0; flex: 1; line-height: 1.3; }
+  .talent .head .who b { font: 600 15px var(--font-head); display: block; }
+  .talent .head .who span { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
+  .talent .role-line { font-size: 13px; font-weight: 600; }
+  .talent .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .talent .stats { display: flex; gap: 14px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; flex-wrap: wrap; }
+  .talent .stats span { display: inline-flex; align-items: center; gap: 4px; }
+  .av-a { background: var(--lilac-soft); color: var(--accent); }
+  .av-b { background: var(--sand-soft); color: var(--warn); }
+  .av-c { background: var(--mint-soft); color: var(--ok); }
+  .av-d { background: var(--orange-soft); color: var(--orange); }
+  .profile { position: sticky; top: calc(38px + env(safe-area-inset-top, 0px) + 16px); align-self: start; overflow: hidden; }
+  .profile .cover { height: 64px; background: var(--lilac-soft); }
+  .profile .id { padding: 0 18px 16px; display: flex; flex-direction: column; gap: 6px; margin-top: -28px; }
+  .profile .id .avatar { width: 56px; height: 56px; font-size: 18px; border: 3px solid var(--surface); }
+  .profile .id h2 { font-size: 18px; display: flex; align-items: center; gap: 6px; }
+  .profile .id h2 svg { color: var(--accent); width: 18px; height: 18px; }
+  .profile .cta { display: flex; gap: 8px; margin-top: 8px; }
+  .profile .cta .btn-primary { flex: 1; }
+  .psec { padding: 16px 18px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+  .psec h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .skills { display: flex; flex-direction: column; gap: 8px; }
+  .skill { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+  .dots { display: inline-flex; gap: 3px; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .dots i.on { background: var(--accent); }
+  .proj { display: flex; gap: 10px; align-items: center; font-size: 13px; }
+  .proj .pthumb { width: 48px; height: 36px; border-radius: 6px; flex: none; }
+  .proj .txt { flex: 1; min-width: 0; line-height: 1.3; }
+  .proj .txt span { display: block; font-size: 12px; color: var(--muted); }
+  .note-fee { font-size: 12px; color: var(--muted); padding: 12px 18px; border-top: 1px solid var(--line); background: var(--faint); }
+
+  [hidden] { display: none !important; }
+  .toggle { white-space: nowrap; flex: none; }
+  .search { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 1100px) {
+    .filters, .profile { position: static; }
+  }
+  @media (max-width: 860px) {
+    .featured { grid-template-columns: 1fr; }
+    .featured .thumb { display: none; }
+    .filters summary { cursor: pointer; }
+  }
+  @media (max-width: 560px) {
+    .talents { grid-template-columns: 1fr; }
+    .fgrid { grid-template-columns: 1fr; }
+    .auth-body h1 { font-size: 24px; }
+  }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-2 5-4 2 2-5z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></symbol>
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M2 9l10-4 10 4-10 4z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v10a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14" r="1"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M5 3h14v18l-2-1.5L15 21l-2-1.5L11 21l-2-1.5L7 21l-2-1.5z"/><path d="M9 8h6M9 12h6"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4.5-6.2"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l12 7-12 7z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c1 3 4 4.5 4 9a4 4 0 0 1-8 0c0-1.5.5-2.5 1-3 .5 1.5 1.5 2 2 2 0-3-1-5 1-8z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.4.9a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-.9-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.4-.9a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6"/></symbol>
+  <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></symbol>
+  <symbol id="i-pix" viewBox="0 0 24 24"><path d="M12 3l4 4-4 4-4-4z"/><path d="M12 13l4 4-4 4-4-4z"/><path d="M5 10l2 2-2 2-2-2zM19 10l2 2-2 2-2-2z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M4 10v4h3l8 4V6l-8 4z"/><path d="M18 9a4 4 0 0 1 0 6"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20l4-1 10-10-3-3L5 16z"/><path d="M13 7l3 3"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.800 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.900 1-6.100L3.200 9.500l6.100-.9z"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></symbol>
+  <symbol id="i-verified" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.500-3 8-7 10-4-2-7-5.500-7-10V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+</svg>
+
+<div class="mockbar">
+  <strong>Protótipo Hub+ Workspace</strong>
+  <div class="seg" role="tablist" aria-label="Telas">
+    <button role="tab" aria-pressed="false" data-screen="signup">Cadastro</button>
+    <button role="tab" aria-pressed="true" data-screen="dashboard">Painel do aluno</button>
+    <button role="tab" aria-pressed="false" data-screen="catalog">Catálogo</button>
+    <button role="tab" aria-pressed="false" data-screen="player">Player</button>
+    <button role="tab" aria-pressed="false" data-screen="wallet">Carteira do mentor</button>
+    <button role="tab" aria-pressed="false" data-screen="talents">Banco de Talentos</button>
+  </div>
+  <span class="spacer"></span>
+  <button class="ghost" id="theme-toggle" type="button"><svg class="i" style="width:14px;height:14px"><use href="#i-sun"/></svg> Alternar tema</button>
+</div>
+
+<!-- ===================== PAINEL DO ALUNO ===================== -->
+<div class="app" id="screen-dashboard">
+  <aside class="side" data-side="student" data-active="home"></aside>
+  <div class="main">
+    <header class="top">
+      <div class="title">
+        <h1>Boa tarde, Duda</h1>
+        <p>Faltam 2 aulas para você concluir Social Media na Prática.</p>
+      </div>
+      <div class="search" role="search"><svg class="i"><use href="#i-search"/></svg> Buscar cursos, mentores… <kbd>/</kbd></div>
+      <button class="iconbtn" aria-label="Notificações"><svg class="i"><use href="#i-bell"/></svg><span class="dot"></span></button>
+      <span class="avatar" aria-label="Maria Eduarda">MD</span>
+    </header>
+
+    <div class="content">
+      <div class="span-8 stack">
+        <div class="kpis">
+          <div class="card kpi">
+            <div class="lbl">Em andamento <span class="ic ic-acc"><svg class="i"><use href="#i-book"/></svg></span></div>
+            <div class="val num">2</div>
+            <div class="sub">1 concluído</div>
+          </div>
+          <div class="card kpi">
+            <div class="lbl">Aulas concluídas <span class="ic ic-ok"><svg class="i"><use href="#i-check"/></svg></span></div>
+            <div class="val num">18</div>
+            <div class="sub"><span class="up">+3</span> esta semana</div>
+          </div>
+          <div class="card kpi">
+            <div class="lbl">Horas de estudo <span class="ic ic-sand"><svg class="i"><use href="#i-clock"/></svg></span></div>
+            <div class="val num">9h 40</div>
+            <div class="sub">Meta semanal: 3h</div>
+          </div>
+          <div class="card kpi">
+            <div class="lbl">Sequência <span class="ic ic-orange"><svg class="i"><use href="#i-flame"/></svg></span></div>
+            <div class="val num">6 dias</div>
+            <div class="sub">Melhor marca: 11 dias</div>
+          </div>
+        </div>
+
+        <section class="card" aria-labelledby="h-resume">
+          <div class="card-h"><h2 id="h-resume">Continuar estudando</h2><a class="link" href="#">Meus cursos <svg class="i" style="width:14px;height:14px"><use href="#i-arrow"/></svg></a></div>
+          <div class="resume">
+            <div class="thumb cover-a">
+              <svg class="cover-art" viewBox="0 0 200 125" aria-hidden="true"><circle cx="150" cy="30" r="40" fill="var(--accent)" opacity=".18"/><rect x="18" y="70" width="90" height="38" rx="8" fill="var(--accent)" opacity=".22"/><rect x="30" y="20" width="60" height="10" rx="5" fill="var(--accent)" opacity=".3"/></svg>
+              <span class="tag pill pill-orange">Módulo 3 de 5</span>
+              <span class="play"><svg class="i"><use href="#i-play"/></svg></span>
+            </div>
+            <div class="info">
+              <div>
+                <h3 style="font-size:16px">Social Media na Prática</h3>
+                <p class="muted">Aula 7 · Calendário editorial na prática · com Ana Souza</p>
+              </div>
+              <div class="prog"><i style="width:74%"></i></div>
+              <div class="row"><span class="num">18 de 24 aulas · 74%</span><span>Última aula há 2 dias</span></div>
+              <div class="actions"><a class="btn btn-primary" href="#" data-go="player">Continuar aula <svg class="i" style="width:15px;height:15px"><use href="#i-arrow"/></svg></a><a class="btn btn-secondary" href="#">Ver conteúdo</a></div>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="h-courses" class="stack" style="gap:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div><h2 id="h-courses">Cursos para você</h2><p class="muted" style="font-size:13px">Com base no que você já estudou</p></div>
+            <a class="btn btn-secondary btn-sm" href="#">Ver catálogo</a>
+          </div>
+          <div class="courses">
+            <article class="card course">
+              <div class="thumb cover-b">
+                <svg class="cover-art" viewBox="0 0 320 180" aria-hidden="true"><rect x="40" y="30" width="110" height="120" rx="10" fill="var(--orange)" opacity=".25"/><circle cx="230" cy="80" r="46" fill="var(--orange)" opacity=".18"/><rect x="180" y="130" width="100" height="18" rx="9" fill="var(--orange)" opacity=".3"/></svg>
+                <span class="tag pill pill-warn">Design</span>
+              </div>
+              <div class="body">
+                <h3>Design para Redes Sociais no Canva</h3>
+                <div class="mentor"><span class="avatar sm">LR</span> Lucas Ramos</div>
+                <div class="meta"><span><svg class="i" style="width:14px;height:14px"><use href="#i-play"/></svg> 20 aulas</span><span><svg class="i" style="width:14px;height:14px"><use href="#i-clock"/></svg> 2h 50</span><span>5 semanas</span></div>
+                <div class="foot"><span class="price">R$ 129,00</span><a class="btn btn-soft btn-sm" href="#">Matricular</a></div>
+              </div>
+            </article>
+            <article class="card course">
+              <div class="thumb cover-c">
+                <svg class="cover-art" viewBox="0 0 320 180" aria-hidden="true"><circle cx="160" cy="90" r="56" fill="var(--ok)" opacity=".16"/><circle cx="160" cy="90" r="26" fill="var(--ok)" opacity=".25"/><rect x="40" y="40" width="40" height="40" rx="8" fill="var(--ok)" opacity=".2"/></svg>
+                <span class="tag pill pill-ok">Fotografia</span>
+              </div>
+              <div class="body">
+                <h3>Fotografia com Celular para Vender Mais</h3>
+                <div class="mentor"><span class="avatar sm">JS</span> Júlia Santana</div>
+                <div class="meta"><span><svg class="i" style="width:14px;height:14px"><use href="#i-play"/></svg> 16 aulas</span><span><svg class="i" style="width:14px;height:14px"><use href="#i-clock"/></svg> 2h 10</span><span>4 semanas</span></div>
+                <div class="foot"><span class="price">R$ 89,00</span><a class="btn btn-soft btn-sm" href="#">Matricular</a></div>
+              </div>
+            </article>
+            <article class="card course">
+              <div class="thumb cover-a">
+                <svg class="cover-art" viewBox="0 0 320 180" aria-hidden="true"><path d="M30 140 L110 90 L170 120 L290 40" stroke="var(--accent)" stroke-width="10" fill="none" opacity=".35" stroke-linecap="round"/><circle cx="290" cy="40" r="12" fill="var(--accent)" opacity=".4"/></svg>
+                <span class="tag pill pill-acc">Marketing</span>
+              </div>
+              <div class="body">
+                <h3>Tráfego Pago do Zero: Meta Ads</h3>
+                <div class="mentor"><span class="avatar sm">RA</span> Rafael Andrade</div>
+                <div class="meta"><span><svg class="i" style="width:14px;height:14px"><use href="#i-play"/></svg> 22 aulas</span><span><svg class="i" style="width:14px;height:14px"><use href="#i-clock"/></svg> 3h 20</span><span>6 semanas</span></div>
+                <div class="foot"><span class="price">R$ 149,00</span><a class="btn btn-soft btn-sm" href="#">Matricular</a></div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <div class="span-4 stack">
+        <section class="card" aria-labelledby="h-path">
+          <div class="card-h"><h2 id="h-path">Seu caminho até o Banco de Talentos</h2></div>
+          <ul class="list path">
+            <li><span class="step done"><svg class="i" style="width:13px;height:13px"><use href="#i-check"/></svg></span><div class="txt"><b>Concluir o primeiro curso</b><span>Social Media na Prática · 74%</span></div></li>
+            <li><span class="step now">2</span><div class="txt"><b>Entregar o desafio prático</b><span>Planejar 1 semana de conteúdo para uma loja de Aracaju · até 21/11</span></div></li>
+            <li><span class="step todo">3</span><div class="txt"><b>Montar o portfólio</b><span>Pelo menos 2 projetos validados por mentores</span></div></li>
+            <li><span class="step todo">4</span><div class="txt"><b>Entrar no Banco de Talentos</b><span>Seu perfil fica visível para empresas parceiras</span></div></li>
+          </ul>
+        </section>
+
+        <section class="card" aria-labelledby="h-agenda">
+          <div class="card-h"><h2 id="h-agenda">Próximos prazos</h2><a class="link" href="#">Agenda</a></div>
+          <ul class="list">
+            <li><span class="ic ic-orange"><svg class="i"><use href="#i-trophy"/></svg></span><div class="txt"><b>Desafio: calendário editorial</b><span>Sexta, 21/11 · 23h59</span></div><span class="pill pill-warn">5 dias</span></li>
+            <li><span class="ic ic-acc"><svg class="i"><use href="#i-users"/></svg></span><div class="txt"><b>Mentoria ao vivo com Ana Souza</b><span>Terça, 18/11 · 19h</span></div><span class="pill pill-acc">Online</span></li>
+            <li><span class="ic ic-muted"><svg class="i"><use href="#i-calendar"/></svg></span><div class="txt"><b>Abertura do módulo 4: Métricas</b><span>Segunda, 24/11</span></div></li>
+          </ul>
+        </section>
+
+        <section class="card" aria-labelledby="h-mentors">
+          <div class="card-h"><h2 id="h-mentors">Quem está ensinando</h2></div>
+          <ul class="list">
+            <li><span class="avatar">AS</span><div class="txt"><b>Ana Souza</b><span>Social media · 312 alunos</span></div><a class="btn btn-secondary btn-sm" href="#">Perfil</a></li>
+            <li><span class="avatar" style="background:var(--sand-soft);color:var(--warn)">LR</span><div class="txt"><b>Lucas Ramos</b><span>Design · 148 alunos</span></div><a class="btn btn-secondary btn-sm" href="#">Perfil</a></li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PLAYER ===================== -->
+<div class="app" id="screen-player" hidden>
+  <aside class="side" data-side="student" data-active="courses"></aside>
+  <div class="main">
+    <header class="top">
+      <div class="title">
+        <div class="crumbs"><span>Meus cursos</span><span>/</span><b>Social Media na Prática</b></div>
+      </div>
+      <span class="chip num"><svg class="i" style="width:14px;height:14px"><use href="#i-flame"/></svg> 6 dias seguidos</span>
+      <button class="iconbtn" aria-label="Notificações"><svg class="i"><use href="#i-bell"/></svg></button>
+      <span class="avatar" aria-label="Maria Eduarda">MD</span>
+    </header>
+
+    <div class="content">
+      <div class="span-8 stack">
+        <div class="lesson-head">
+          <h1>Aula 7 · Calendário editorial na prática</h1>
+          <div class="chips"><span class="chip">Módulo 3 · Produção</span><span class="chip"><svg class="i" style="width:14px;height:14px"><use href="#i-clock"/></svg> 12 min</span><span class="chip">Intermediário</span><span class="chip"><svg class="i" style="width:14px;height:14px"><use href="#i-download"/></svg> 2 materiais</span></div>
+        </div>
+
+        <div class="video" role="img" aria-label="Vídeo da aula, parado em 4:35 de 12:00">
+          <div class="slide" aria-hidden="true"><i></i><i></i></div>
+          <span class="play"><svg class="i"><use href="#i-play"/></svg></span>
+          <div class="bar">
+            <div class="row num"><span>4:35 / 12:00</span><span>Módulo 3 de 5 · 74% do curso</span></div>
+            <div class="track"><i></i></div>
+          </div>
+        </div>
+
+        <section class="card">
+          <div class="tabs" role="tablist">
+            <button role="tab" aria-selected="true">Visão geral</button>
+            <button role="tab" aria-selected="false">Materiais</button>
+            <button role="tab" aria-selected="false">Dúvidas <span class="pill pill-muted" style="margin-left:4px">3</span></button>
+            <button role="tab" aria-selected="false">Anotações</button>
+          </div>
+          <div class="card-b stack" style="gap:16px">
+            <div class="prose">
+              <p>Nesta aula você monta o calendário editorial de uma semana para um negócio real de Aracaju. A ideia é sair da teoria: ao final, você terá um arquivo pronto para usar no desafio do módulo.</p>
+              <h3>O que você vai fazer</h3>
+              <ul>
+                <li>Definir 3 pilares de conteúdo para a marca escolhida.</li>
+                <li>Distribuir 7 postagens entre feed, stories e reels.</li>
+                <li>Escrever a legenda e a chamada de um dos posts.</li>
+              </ul>
+            </div>
+            <div class="callout">
+              <span class="ic ic-orange"><svg class="i"><use href="#i-trophy"/></svg></span>
+              <div><b>Desafio desta semana vale para o portfólio</b><p>Entregue até sexta, 21/11. A Ana Souza devolve o feedback em até 3 dias úteis.</p></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="span-4">
+        <section class="card" aria-labelledby="h-content">
+          <div class="card-h"><h2 id="h-content">Conteúdo do curso</h2><span class="muted num" style="font-size:12px">24 aulas · 3h 10</span></div>
+          <div class="card-b" style="padding:14px 18px;border-bottom:1px solid var(--line)">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px"><span class="muted">Seu progresso</span><b class="num">18 de 24</b></div>
+            <div class="prog"><i style="width:74%"></i></div>
+          </div>
+          <div class="modules">
+            <details class="mod">
+              <summary><span class="st st-done"><svg class="i"><use href="#i-check"/></svg></span><div class="txt"><b>01. Boas-vindas e método</b><span>Concluído · 4 aulas</span></div><svg class="i chev"><use href="#i-chev"/></svg></summary>
+            </details>
+            <details class="mod">
+              <summary><span class="st st-done"><svg class="i"><use href="#i-check"/></svg></span><div class="txt"><b>02. Estratégia de conteúdo</b><span>Concluído · 6 aulas</span></div><svg class="i chev"><use href="#i-chev"/></svg></summary>
+            </details>
+            <details class="mod" open>
+              <summary><span class="st st-now"><svg class="i"><use href="#i-play"/></svg></span><div class="txt"><b>03. Produção</b><span>Em andamento · 3 de 6</span></div><svg class="i chev"><use href="#i-chev"/></svg></summary>
+              <ul class="lessons">
+                <li><span class="st st-done" style="width:20px;height:20px"><svg class="i" style="width:11px;height:11px"><use href="#i-check"/></svg></span><span class="t">Pautas que engajam</span><span class="d num">8 min</span></li>
+                <li><span class="st st-done" style="width:20px;height:20px"><svg class="i" style="width:11px;height:11px"><use href="#i-check"/></svg></span><span class="t">Fotografando com o celular</span><span class="d num">11 min</span></li>
+                <li><span class="st st-done" style="width:20px;height:20px"><svg class="i" style="width:11px;height:11px"><use href="#i-check"/></svg></span><span class="t">Legendas e chamadas</span><span class="d num">9 min</span></li>
+                <li class="now" aria-current="true"><span class="st st-now" style="width:20px;height:20px"><svg class="i" style="width:11px;height:11px"><use href="#i-play"/></svg></span><span class="t">Calendário editorial na prática</span><span class="mini prog"><i style="width:38%"></i></span></li>
+                <li><span class="st st-todo" style="width:20px;height:20px"></span><span class="t">Roteiro de reels em 3 atos</span><span class="d num">10 min</span></li>
+                <li><span class="st st-todo" style="width:20px;height:20px"></span><span class="t">Edição rápida no CapCut</span><span class="d num">14 min</span></li>
+              </ul>
+            </details>
+            <details class="mod locked">
+              <summary><span class="st st-lock"><svg class="i"><use href="#i-lock"/></svg></span><div class="txt"><b>04. Métricas que importam</b><span>Abre em 24/11 · 5 aulas</span></div><svg class="i chev"><use href="#i-chev"/></svg></summary>
+            </details>
+            <details class="mod locked">
+              <summary><span class="st st-lock"><svg class="i"><use href="#i-lock"/></svg></span><div class="txt"><b>05. Desafio final e certificado</b><span>Bloqueado · 3 aulas</span></div><svg class="i chev"><use href="#i-chev"/></svg></summary>
+            </details>
+          </div>
+          <div class="side-actions">
+            <button class="btn btn-primary btn-block" type="button"><svg class="i" style="width:16px;height:16px"><use href="#i-check"/></svg> Concluir aula e ir para a próxima</button>
+            <button class="btn btn-secondary btn-block" type="button"><svg class="i" style="width:16px;height:16px"><use href="#i-download"/></svg> Baixar modelo de calendário</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CARTEIRA DO MENTOR ===================== -->
+<div class="app" id="screen-wallet" hidden>
+  <aside class="side" data-side="mentor" data-active="wallet"></aside>
+  <div class="main">
+    <header class="top">
+      <div class="title">
+        <h1>Carteira</h1>
+        <p>Suas vendas, retenções e saques. Valores em reais.</p>
+      </div>
+      <a class="btn btn-primary" href="#pix"><svg class="i" style="width:16px;height:16px"><use href="#i-pix"/></svg> Solicitar saque</a>
+      <button class="iconbtn" aria-label="Notificações"><svg class="i"><use href="#i-bell"/></svg><span class="dot"></span></button>
+      <span class="avatar" aria-label="Ana Souza">AS</span>
+    </header>
+
+    <div class="content">
+      <div class="span-12 kpis">
+        <div class="card kpi">
+          <div class="lbl">Disponível para saque <span class="ic ic-ok"><svg class="i"><use href="#i-wallet"/></svg></span></div>
+          <div class="val num">R$ 2.436,80</div>
+          <div class="sub"><span class="pill pill-ok">Pronto para Pix</span></div>
+        </div>
+        <div class="card kpi">
+          <div class="lbl">Pendente <span class="ic ic-sand"><svg class="i"><use href="#i-clock"/></svg></span></div>
+          <div class="val num">R$ 1.192,00</div>
+          <div class="sub">Libera em até 7 dias após cada venda</div>
+        </div>
+        <div class="card kpi">
+          <div class="lbl">Novembro <span class="ic ic-acc"><svg class="i"><use href="#i-trend"/></svg></span></div>
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+            <div class="val num">R$ 3.628,80</div>
+            <div class="bars" aria-hidden="true"><i style="height:30%"></i><i style="height:45%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:55%"></i><i style="height:85%"></i><i class="on" style="height:100%"></i></div>
+          </div>
+          <div class="sub"><span class="up">+18%</span> em relação a outubro</div>
+        </div>
+        <div class="card kpi">
+          <div class="lbl">Total recebido <span class="ic ic-muted"><svg class="i"><use href="#i-receipt"/></svg></span></div>
+          <div class="val num">R$ 14.820,00</div>
+          <div class="sub">Desde março de 2026 · 93 vendas</div>
+        </div>
+      </div>
+
+      <div class="span-8 stack">
+        <section class="card" aria-labelledby="h-activity">
+          <div class="card-h"><h2 id="h-activity">Atividade recente</h2><div style="display:flex;gap:6px"><span class="chip">Tudo</span><span class="chip" style="background:transparent">Vendas</span><span class="chip" style="background:transparent">Saques</span></div></div>
+          <ul class="list">
+            <li><span class="ic ic-ok"><svg class="i"><use href="#i-bag"/></svg></span><div class="txt"><b>Venda · Social Media na Prática</b><span>Maria Eduarda · hoje, 14h12 · Pix</span></div><div class="amount pos num">+ R$ 159,20<small>Pendente até 17/11</small></div></li>
+            <li><span class="ic ic-ok"><svg class="i"><use href="#i-bag"/></svg></span><div class="txt"><b>Venda · Reels que Vendem</b><span>Pedro Lima · ontem · cartão</span></div><div class="amount pos num">+ R$ 103,20<small>Pendente até 16/11</small></div></li>
+            <li><span class="ic ic-acc"><svg class="i"><use href="#i-pix"/></svg></span><div class="txt"><b>Saque via Pix</b><span>03/11 · CPF ···456</span></div><div class="amount num">− R$ 1.500,00<small>Pago</small></div></li>
+            <li><span class="ic ic-ok"><svg class="i"><use href="#i-bag"/></svg></span><div class="txt"><b>Venda · Social Media na Prática</b><span>Carla Nunes · 02/11 · Pix</span></div><div class="amount pos num">+ R$ 159,20<small>Disponível</small></div></li>
+            <li><span class="ic ic-bad"><svg class="i"><use href="#i-undo"/></svg></span><div class="txt"><b>Reembolso · Social Media na Prática</b><span>João Vítor · 30/10 · dentro da garantia</span></div><div class="amount num">− R$ 159,20<small>Estornado</small></div></li>
+          </ul>
+          <div style="padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:12px" class="muted"><span>De cada venda, 80% vai para você e 20% fica com o Hub+.</span><a href="#" class="link" style="color:var(--accent);font-weight:600;text-decoration:none">Ver extrato completo</a></div>
+        </section>
+
+        <section class="card" aria-labelledby="h-bycourse">
+          <div class="card-h"><h2 id="h-bycourse">Vendas por curso em novembro</h2><span class="muted num" style="font-size:12px">23 vendas</span></div>
+          <div class="card-b mini-bars">
+            <div class="row"><span>Social Media na Prática</span><div class="prog acc"><i style="width:62%"></i></div><span class="v num">14</span></div>
+            <div class="row"><span>Reels que Vendem</span><div class="prog acc"><i style="width:30%"></i></div><span class="v num">7</span></div>
+            <div class="row"><span>Mentoria: Primeiro Cliente</span><div class="prog acc"><i style="width:9%"></i></div><span class="v num">2</span></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="span-4 stack">
+        <section class="card" id="pix" aria-labelledby="h-pix">
+          <div class="card-h"><h2 id="h-pix">Sacar via Pix</h2></div>
+          <div class="card-b pix">
+            <div class="key"><span><span class="muted">Chave cadastrada</span><br><code>CPF ···.456.789-··</code></span><a href="#" class="link" style="color:var(--accent);font-weight:600;text-decoration:none;font-size:12px">Trocar</a></div>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600">Valor
+              <input id="withdraw-amount" type="text" inputmode="decimal" value="2.436,80" style="height:40px;border:1px solid var(--line);border-radius:8px;padding:0 12px;font:600 15px var(--font-body);background:var(--faint);color:var(--ink);font-variant-numeric:tabular-nums">
+            </label>
+            <button class="btn btn-primary btn-block" type="button">Solicitar saque de R$ 2.436,80</button>
+            <p class="note">Mínimo de R$ 50,00. O Hub+ faz o Pix em até 2 dias úteis e você recebe um aviso aqui e por e-mail.</p>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="h-withdrawals">
+          <div class="card-h"><h2 id="h-withdrawals">Saques</h2><a class="link" href="#">Histórico</a></div>
+          <ul class="list">
+            <li><div class="txt"><b class="num">R$ 600,00</b><span>Solicitado em 09/11</span></div><span class="pill pill-warn">Em análise</span></li>
+            <li><div class="txt"><b class="num">R$ 1.500,00</b><span>03/11 · Pix enviado</span></div><span class="pill pill-ok">Pago</span></li>
+            <li><div class="txt"><b class="num">R$ 980,00</b><span>20/10 · Pix enviado</span></div><span class="pill pill-ok">Pago</span></li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <div class="card-b" style="display:flex;gap:12px;align-items:flex-start">
+            <span class="ic ic-sand"><svg class="i"><use href="#i-help"/></svg></span>
+            <div style="font-size:13px"><b>Por que existe o saldo pendente?</b><p class="muted" style="margin-top:4px">O aluno tem 7 dias de garantia. Depois disso, o valor da venda passa para "disponível" e pode ser sacado.</p></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CADASTRO ===================== -->
+<div class="auth" id="screen-signup" hidden>
+  <div class="auth-form">
+    <div class="brand"><span class="mark">HUB+</span><b>Hub+</b></div>
+    <div class="auth-body">
+      <ol class="stepper" id="stepper" aria-label="Etapas do cadastro">
+        <li class="now">Perfil</li><li>Seus dados</li><li>Interesses</li>
+      </ol>
+
+      <section data-step="1" class="stack" style="gap:20px">
+        <div><h1>Como você quer usar o Hub+?</h1><p class="lead">Você pode mudar isso depois, falando com a gente.</p></div>
+        <fieldset class="roles">
+          <legend class="sr" style="position:absolute;left:-9999px">Tipo de conta</legend>
+          <label class="role"><input type="radio" name="role" value="student" checked><span class="ic ic-acc"><svg class="i"><use href="#i-cap"/></svg></span><span class="txt"><b>Quero aprender</b><span>Faça cursos curtos e entre no Banco de Talentos.</span></span><span class="radio"></span></label>
+          <label class="role"><input type="radio" name="role" value="mentor"><span class="ic ic-orange"><svg class="i"><use href="#i-pen"/></svg></span><span class="txt"><b>Quero ensinar</b><span>Publique cursos e receba pelas vendas na sua carteira.</span></span><span class="radio"></span></label>
+          <label class="role"><input type="radio" name="role" value="company"><span class="ic ic-sand"><svg class="i"><use href="#i-briefcase"/></svg></span><span class="txt"><b>Sou empresa</b><span>Conheça jovens talentos e acompanhe a formação.</span></span><span class="radio"></span></label>
+        </fieldset>
+        <div class="form-actions"><button class="btn btn-primary" type="button" data-next>Continuar <svg class="i" style="width:15px;height:15px"><use href="#i-arrow"/></svg></button></div>
+      </section>
+
+      <section data-step="2" class="stack" style="gap:20px" hidden>
+        <div><h1>Quase lá, conta pra gente quem é você</h1><p class="lead">Leva menos de um minuto. Não pedimos CPF agora.</p></div>
+        <div class="fgrid">
+          <label class="field full" for="su-name">Nome completo<input id="su-name" class="input" type="text" autocomplete="name" placeholder="Maria Eduarda Silva"></label>
+          <label class="field full" for="su-mail">E-mail<input id="su-mail" class="input" type="email" autocomplete="email" placeholder="voce@email.com"></label>
+          <label class="field" for="su-birth">Data de nascimento<input id="su-birth" class="input" type="date" value="2004-03-18"><small>O Hub+ é para jovens de 18 a 26 anos.</small></label>
+          <label class="field" for="su-city">Onde você mora<select id="su-city" class="input"><option>Aracaju</option><option>Nossa Senhora do Socorro</option><option>São Cristóvão</option><option>Barra dos Coqueiros</option><option>Outra cidade</option></select></label>
+          <label class="field full" for="su-pass">Senha<input id="su-pass" class="input" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"></label>
+        </div>
+        <div class="form-actions"><button class="btn btn-secondary" type="button" data-back>Voltar</button><button class="btn btn-primary" type="button" data-next>Continuar <svg class="i" style="width:15px;height:15px"><use href="#i-arrow"/></svg></button></div>
+      </section>
+
+      <section data-step="3" class="stack" style="gap:20px" hidden>
+        <div><h1>O que você quer aprender primeiro?</h1><p class="lead">Escolha quantos quiser. Usamos isso para sugerir cursos.</p></div>
+        <div class="toggles" role="group" aria-label="Interesses">
+          <button class="toggle" type="button" aria-pressed="true">Social media</button>
+          <button class="toggle" type="button" aria-pressed="true">Design gráfico</button>
+          <button class="toggle" type="button" aria-pressed="false">Fotografia</button>
+          <button class="toggle" type="button" aria-pressed="false">Edição de vídeo</button>
+          <button class="toggle" type="button" aria-pressed="false">Tráfego pago</button>
+          <button class="toggle" type="button" aria-pressed="false">Atendimento e vendas</button>
+          <button class="toggle" type="button" aria-pressed="false">Excel e dados</button>
+          <button class="toggle" type="button" aria-pressed="false">Currículo e entrevistas</button>
+        </div>
+        <label class="check" for="su-talent"><input id="su-talent" type="checkbox" checked> Quero aparecer no Banco de Talentos quando meu portfólio estiver pronto</label>
+        <div class="form-actions"><button class="btn btn-secondary" type="button" data-back>Voltar</button><button class="btn btn-primary" type="button" data-next>Criar minha conta</button></div>
+      </section>
+
+      <p class="auth-foot">Já tem conta? <a href="#">Entrar</a></p>
+    </div>
+  </div>
+  <aside class="auth-art" aria-hidden="true">
+    <div class="auth-stats"><span class="chip"><svg class="i" style="width:14px;height:14px"><use href="#i-clock"/></svg> Cursos de 4 a 6 semanas</span></div>
+    <div class="photo">
+      <svg viewBox="0 0 24 24" class="i" style="stroke-width:1"><use href="#i-camera"/></svg>
+      <span style="position:absolute;top:16px;left:0;right:0">Espaço para foto real de aluno ou aluna do Hub+</span>
+      <div class="quote">
+        “Fiz o curso de social media e, três semanas depois, já estava atendendo minha primeira loja.”
+        <footer><span class="avatar sm av-c">JS</span><span><b>Júlia, 22 anos</b>Atalaia, Aracaju · exemplo de depoimento</span></footer>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ===================== CATÁLOGO ===================== -->
+<div class="app" id="screen-catalog" hidden>
+  <aside class="side" data-side="student" data-active="explore"></aside>
+  <div class="main">
+    <header class="top">
+      <div class="title"><h1>Explorar cursos</h1><p>47 cursos curtos, com mentores de Aracaju e de todo o Brasil.</p></div>
+      <div class="search" role="search"><svg class="i"><use href="#i-search"/></svg> Buscar cursos, mentores… <kbd>/</kbd></div>
+      <button class="iconbtn" aria-label="Notificações"><svg class="i"><use href="#i-bell"/></svg><span class="dot"></span></button>
+      <span class="avatar" aria-label="Maria Eduarda">MD</span>
+    </header>
+    <div class="content">
+      <aside class="span-3">
+        <details class="card filters" id="filters" open>
+          <summary class="card-h"><h2>Filtros</h2><span class="link" style="font-size:13px;font-weight:600;color:var(--accent)">Limpar</span></summary>
+          <div class="fsec" style="border-top:0">
+            <h3>Categoria</h3>
+            <label class="check"><input type="checkbox" checked> Social media <span class="n">12</span></label>
+            <label class="check"><input type="checkbox" checked> Design gráfico <span class="n">9</span></label>
+            <label class="check"><input type="checkbox"> Fotografia e vídeo <span class="n">8</span></label>
+            <label class="check"><input type="checkbox"> Tráfego pago <span class="n">6</span></label>
+            <label class="check"><input type="checkbox"> Vendas e atendimento <span class="n">7</span></label>
+            <label class="check"><input type="checkbox"> Carreira e currículo <span class="n">5</span></label>
+          </div>
+          <div class="fsec">
+            <h3>Duração</h3>
+            <label class="check"><input type="radio" name="dur" checked> Qualquer <span class="n"></span></label>
+            <label class="check"><input type="radio" name="dur"> 4 semanas <span class="n">18</span></label>
+            <label class="check"><input type="radio" name="dur"> 5 semanas <span class="n">16</span></label>
+            <label class="check"><input type="radio" name="dur"> 6 semanas <span class="n">13</span></label>
+          </div>
+          <div class="fsec">
+            <h3>Nível</h3>
+            <label class="check"><input type="checkbox" checked> Iniciante <span class="n">31</span></label>
+            <label class="check"><input type="checkbox"> Intermediário <span class="n">16</span></label>
+          </div>
+          <div class="fsec">
+            <h3>Preço</h3>
+            <label class="check"><input type="radio" name="price" checked> Qualquer valor</label>
+            <label class="check"><input type="radio" name="price"> Até R$ 100</label>
+            <label class="check"><input type="radio" name="price"> R$ 100 a R$ 200</label>
+            <label class="check"><input type="radio" name="price"> Com bolsa disponível</label>
+          </div>
+        </details>
+      </aside>
+
+      <div class="span-9 stack">
+        <section class="card featured" aria-labelledby="h-feat">
+          <div>
+            <span class="pill pill-orange">Mais procurado em Aracaju</span>
+            <h2 id="h-feat" style="margin-top:10px">Social Media na Prática</h2>
+            <p>Planeje, produza e publique conteúdo para negócios locais. Termina com um desafio que vira item do seu portfólio.</p>
+            <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><a class="btn btn-primary" href="#">Ver curso</a><span class="chip" style="background:var(--surface)"><span class="rating"><svg class="i"><use href="#i-star"/></svg>4,9</span> · 312 alunos</span></div>
+          </div>
+          <div class="thumb cover-b" style="background:var(--surface)">
+            <svg class="cover-art" viewBox="0 0 200 150" aria-hidden="true"><rect x="22" y="24" width="96" height="100" rx="10" fill="var(--accent)" opacity=".2"/><circle cx="150" cy="56" r="30" fill="var(--orange)" opacity=".28"/><rect x="104" y="100" width="70" height="14" rx="7" fill="var(--accent)" opacity=".3"/></svg>
+          </div>
+        </section>
+
+        <div class="toolbar">
+          <div class="cat-tabs" role="tablist" aria-label="Categorias">
+            <button class="toggle" type="button" aria-pressed="true">Todos</button>
+            <button class="toggle" type="button" aria-pressed="false">Social media</button>
+            <button class="toggle" type="button" aria-pressed="false">Design</button>
+            <button class="toggle" type="button" aria-pressed="false">Fotografia</button>
+            <button class="toggle" type="button" aria-pressed="false">Tráfego pago</button>
+            <button class="toggle" type="button" aria-pressed="false">Vendas</button>
+          </div>
+          <label class="field" for="sort" style="flex-direction:row;align-items:center;gap:8px;font-weight:500"><span class="muted">Ordenar</span>
+            <select id="sort" class="input sel"><option>Mais procurados</option><option>Mais recentes</option><option>Menor preço</option><option>Melhor avaliados</option></select></label>
+        </div>
+
+        <div class="courses">
+          <article class="card course"><div class="thumb cover-b"><svg class="cover-art" viewBox="0 0 320 180" aria-hidden="true"><rect x="40" y="30" width="110" height="120" rx="10" fill="var(--orange)" opacity=".25"/><circle cx="230" cy="80" r="46" fill="var(--orange)" opacity=".18"/></svg><span class="tag pill pill-warn">Design</span></div>
+            <div class="body"><h3>Design para Redes Sociais no Canva</h3><div class="mentor"><span class="avatar sm">LR</span> Lucas Ramos · <span class="rating"><svg class="i"><use href="#i-star"/></svg>4,8</span></div><div class="meta"><span>20 aulas</span><span>2h 50</span><span>5 semanas</span></div><div class="foot"><span class="price">R$ 129,00</span><a class="btn btn-soft btn-sm" href="#">Ver curso</a></div></div></article>
+          <article class="card course"><div class="thumb cover-c"><svg class="cover-art" viewBox="0 0 320 180" aria-hidden="true"><circle cx="160" cy="90" r="56" fill="var(--ok)" opacity=".16"/><circle cx="160" cy="90" r="26" fill="var(--ok)" opacity=".25"/></svg><span class="tag pill pill-ok">Fotografia</span></div>
+            <div class="body"><h3>Fotografia com Celular para Vender Mais</h3><div class="mentor"><span class="avatar sm">JS</span> Júlia Santana · <span class="rating"><svg class="i"><use href="#i-star"/></svg>4,7</span></div><div class="meta"><span>16 aulas</span><span>2h 10</span><span>4 semanas</span></div><div class="foot"><span class="price">R$ 89,00</span><a class="btn btn-soft btn-sm" href="#">Ver curso</a></div></div></article>
+          <article class="card course"><div class="thumb cover-a"><svg class="cover-art" viewBox="0 0 320 180" aria-hidden="true"><path d="M30 140 L110 90 L170 120 L290 40" stroke="var(--accent)" stroke-width="10" fill="none" opacity=".35" stroke-linecap="round"/></svg><span class="tag pill pill-acc">Marketing</span></div>
+            <div class="body"><h3>Tráfego Pago do Zero: Meta Ads</h3><div class="mentor"><span class="avatar sm">RA</span> Rafael Andrade · <span class="rating"><svg class="i"><use href="#i-star"/></svg>4,9</span></div><div class="meta"><span>22 aulas</span><span>3h 20</span><span>6 semanas</span></div><div class="foot"><span class="price">R$ 149,00</span><a class="btn btn-soft btn-sm" href="#">Ver curso</a></div></div></article>
+          <article class="card course"><div class="thumb cover-d"><svg class="cover-art" viewBox="0 0 320 180" aria-hidden="true"><rect x="60" y="40" width="80" height="100" rx="40" fill="var(--orange)" opacity=".22"/><rect x="170" y="60" width="90" height="60" rx="10" fill="var(--orange)" opacity=".28"/></svg><span class="tag pill pill-orange">Vídeo</span></div>
+            <div class="body"><h3>Reels que Vendem: Roteiro e Edição</h3><div class="mentor"><span class="avatar sm">AS</span> Ana Souza · <span class="rating"><svg class="i"><use href="#i-star"/></svg>4,9</span></div><div class="meta"><span>18 aulas</span><span>2h 30</span><span>4 semanas</span></div><div class="foot"><span class="price">R$ 99,00</span><a class="btn btn-soft btn-sm" href="#">Ver curso</a></div></div></article>
+          <article class="card course"><div class="thumb cover-a"><svg class="cover-art" viewBox="0 0 320 180" aria-hidden="true"><circle cx="110" cy="90" r="44" fill="var(--accent)" opacity=".2"/><circle cx="200" cy="90" r="44" fill="var(--accent)" opacity=".3"/></svg><span class="tag pill pill-acc">Vendas</span></div>
+            <div class="body"><h3>Atendimento no WhatsApp que Converte</h3><div class="mentor"><span class="avatar sm">TA</span> Thiago Alves · <span class="rating"><svg class="i"><use href="#i-star"/></svg>4,6</span></div><div class="meta"><span>14 aulas</span><span>1h 50</span><span>4 semanas</span></div><div class="foot"><span class="price">R$ 69,00</span><a class="btn btn-soft btn-sm" href="#">Ver curso</a></div></div></article>
+          <article class="card course"><div class="thumb cover-c"><svg class="cover-art" viewBox="0 0 320 180" aria-hidden="true"><rect x="50" y="30" width="220" height="120" rx="12" fill="var(--ok)" opacity=".16"/><rect x="80" y="60" width="100" height="10" rx="5" fill="var(--ok)" opacity=".35"/><rect x="80" y="84" width="140" height="10" rx="5" fill="var(--ok)" opacity=".25"/></svg><span class="tag pill pill-ok">Carreira</span></div>
+            <div class="body"><h3>Currículo e Entrevista para o Primeiro Emprego</h3><div class="mentor"><span class="avatar sm">CN</span> Carla Nunes · <span class="rating"><svg class="i"><use href="#i-star"/></svg>4,8</span></div><div class="meta"><span>12 aulas</span><span>1h 40</span><span>4 semanas</span></div><div class="foot"><span class="price">R$ 49,00</span><a class="btn btn-soft btn-sm" href="#">Ver curso</a></div></div></article>
+        </div>
+        <nav class="pager" aria-label="Paginação"><button type="button" aria-label="Anterior">‹</button><button type="button" aria-current="page">1</button><button type="button">2</button><button type="button">3</button><button type="button">4</button><button type="button" aria-label="Próxima">›</button></nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== BANCO DE TALENTOS (empresa) ===================== -->
+<div class="app" id="screen-talents" hidden>
+  <aside class="side" data-side="company" data-active="talents"></aside>
+  <div class="main">
+    <header class="top">
+      <div class="title"><h1>Banco de Talentos</h1><p>Jovens de Aracaju e região com cursos concluídos e projetos validados por mentores.</p></div>
+      <div class="search" role="search"><svg class="i"><use href="#i-search"/></svg> Buscar por nome ou habilidade… <kbd>/</kbd></div>
+      <button class="iconbtn" aria-label="Notificações"><svg class="i"><use href="#i-bell"/></svg></button>
+      <span class="avatar av-d" aria-label="Studio Atalaia">SA</span>
+    </header>
+    <div class="content">
+      <section class="card planbar span-12" aria-label="Seu plano">
+        <span class="seal"><i aria-hidden="true"></i> Plano Essencial · Selo Bronze</span>
+        <div class="meter"><div style="display:flex;justify-content:space-between"><span>Perfis abertos este mês</span><b class="num" style="color:var(--ink)">12 de 30</b></div><div class="prog acc"><i style="width:40%"></i></div></div>
+        <a class="btn btn-secondary btn-sm" href="#">Ver planos</a>
+      </section>
+
+      <div class="span-8 stack">
+        <div class="toolbar">
+          <div class="cat-tabs" aria-label="Filtros rápidos">
+            <button class="toggle" type="button" aria-pressed="true"><svg class="i" style="width:14px;height:14px"><use href="#i-filter"/></svg> Todas as áreas</button>
+            <button class="toggle" type="button" aria-pressed="false">Social media</button>
+            <button class="toggle" type="button" aria-pressed="false">Design</button>
+            <button class="toggle" type="button" aria-pressed="false">Vídeo</button>
+            <button class="toggle" type="button" aria-pressed="false">Tráfego pago</button>
+            <button class="toggle" type="button" aria-pressed="true"><svg class="i" style="width:14px;height:14px"><use href="#i-verified"/></svg> Portfólio validado</button>
+          </div>
+          <span class="muted num" style="font-size:13px">46 talentos</span>
+        </div>
+
+        <div class="talents">
+          <button class="card talent" type="button" aria-pressed="true">
+            <span class="head"><span class="avatar lg av-c">JS</span><span class="who"><b>Júlia Santana</b><span><svg class="i" style="width:13px;height:13px"><use href="#i-pin"/></svg> Atalaia · 22 anos</span></span><span class="pill pill-ok">Disponível</span></span>
+            <span class="role-line">Social media e criação de conteúdo</span>
+            <span class="tags"><span class="chip">Calendário editorial</span><span class="chip">Reels</span><span class="chip">Canva</span></span>
+            <span class="stats"><span><svg class="i" style="width:14px;height:14px"><use href="#i-verified"/></svg> 3 projetos validados</span><span><svg class="i" style="width:14px;height:14px"><use href="#i-cap"/></svg> 2 cursos</span><span class="rating"><svg class="i"><use href="#i-star"/></svg>4,8 dos mentores</span></span>
+          </button>
+          <button class="card talent" type="button" aria-pressed="false">
+            <span class="head"><span class="avatar lg av-a">PL</span><span class="who"><b>Pedro Lima</b><span><svg class="i" style="width:13px;height:13px"><use href="#i-pin"/></svg> Farolândia · 20 anos</span></span><span class="pill pill-ok">Disponível</span></span>
+            <span class="role-line">Design gráfico e identidade visual</span>
+            <span class="tags"><span class="chip">Figma</span><span class="chip">Logotipos</span><span class="chip">Canva</span></span>
+            <span class="stats"><span><svg class="i" style="width:14px;height:14px"><use href="#i-verified"/></svg> 4 projetos validados</span><span><svg class="i" style="width:14px;height:14px"><use href="#i-cap"/></svg> 3 cursos</span><span class="rating"><svg class="i"><use href="#i-star"/></svg>4,7 dos mentores</span></span>
+          </button>
+          <button class="card talent" type="button" aria-pressed="false">
+            <span class="head"><span class="avatar lg av-b">CN</span><span class="who"><b>Carla Nunes</b><span><svg class="i" style="width:13px;height:13px"><use href="#i-pin"/></svg> Siqueira Campos · 24 anos</span></span><span class="pill pill-warn">Em processo</span></span>
+            <span class="role-line">Tráfego pago e Meta Ads</span>
+            <span class="tags"><span class="chip">Meta Ads</span><span class="chip">Métricas</span><span class="chip">Funil</span></span>
+            <span class="stats"><span><svg class="i" style="width:14px;height:14px"><use href="#i-verified"/></svg> 2 projetos validados</span><span><svg class="i" style="width:14px;height:14px"><use href="#i-cap"/></svg> 2 cursos</span><span class="rating"><svg class="i"><use href="#i-star"/></svg>4,9 dos mentores</span></span>
+          </button>
+          <button class="card talent" type="button" aria-pressed="false">
+            <span class="head"><span class="avatar lg av-d">JV</span><span class="who"><b>João Vítor</b><span><svg class="i" style="width:13px;height:13px"><use href="#i-pin"/></svg> Bugio · 19 anos</span></span><span class="pill pill-ok">Disponível</span></span>
+            <span class="role-line">Fotografia e vídeo curto</span>
+            <span class="tags"><span class="chip">Fotografia mobile</span><span class="chip">CapCut</span><span class="chip">Iluminação</span></span>
+            <span class="stats"><span><svg class="i" style="width:14px;height:14px"><use href="#i-verified"/></svg> 3 projetos validados</span><span><svg class="i" style="width:14px;height:14px"><use href="#i-cap"/></svg> 2 cursos</span><span class="rating"><svg class="i"><use href="#i-star"/></svg>4,6 dos mentores</span></span>
+          </button>
+          <button class="card talent" type="button" aria-pressed="false">
+            <span class="head"><span class="avatar lg av-a">TA</span><span class="who"><b>Thiago Alves</b><span><svg class="i" style="width:13px;height:13px"><use href="#i-pin"/></svg> Santos Dumont · 23 anos</span></span><span class="pill pill-ok">Disponível</span></span>
+            <span class="role-line">Atendimento e vendas online</span>
+            <span class="tags"><span class="chip">WhatsApp Business</span><span class="chip">Pós-venda</span></span>
+            <span class="stats"><span><svg class="i" style="width:14px;height:14px"><use href="#i-verified"/></svg> 2 projetos validados</span><span><svg class="i" style="width:14px;height:14px"><use href="#i-cap"/></svg> 2 cursos</span><span class="rating"><svg class="i"><use href="#i-star"/></svg>4,5 dos mentores</span></span>
+          </button>
+          <button class="card talent" type="button" aria-pressed="false">
+            <span class="head"><span class="avatar lg av-c">LM</span><span class="who"><b>Larissa Moura</b><span><svg class="i" style="width:13px;height:13px"><use href="#i-pin"/></svg> Jardins · 21 anos</span></span><span class="pill pill-ok">Disponível</span></span>
+            <span class="role-line">Social media e design</span>
+            <span class="tags"><span class="chip">Identidade visual</span><span class="chip">Stories</span><span class="chip">Figma</span></span>
+            <span class="stats"><span><svg class="i" style="width:14px;height:14px"><use href="#i-verified"/></svg> 5 projetos validados</span><span><svg class="i" style="width:14px;height:14px"><use href="#i-cap"/></svg> 4 cursos</span><span class="rating"><svg class="i"><use href="#i-star"/></svg>4,9 dos mentores</span></span>
+          </button>
+        </div>
+        <nav class="pager" aria-label="Paginação"><button type="button" aria-label="Anterior">‹</button><button type="button" aria-current="page">1</button><button type="button">2</button><button type="button">3</button><button type="button" aria-label="Próxima">›</button></nav>
+      </div>
+
+      <aside class="span-4">
+        <section class="card profile" aria-labelledby="h-prof">
+          <div class="cover"></div>
+          <div class="id">
+            <span class="avatar av-c">JS</span>
+            <h2 id="h-prof">Júlia Santana <svg class="i"><use href="#i-verified"/></svg></h2>
+            <p class="muted">Social media e criação de conteúdo · Atalaia, Aracaju</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill pill-ok">Disponível para estágio ou CLT</span></div>
+            <div class="cta"><button class="btn btn-primary" type="button"><svg class="i" style="width:15px;height:15px"><use href="#i-mail"/></svg> Convidar para vaga</button><button class="btn btn-secondary iconbtn" type="button" aria-label="Salvar perfil" style="width:38px;padding:0"><svg class="i"><use href="#i-bookmark"/></svg></button></div>
+          </div>
+          <div class="psec">
+            <h3>Habilidades</h3>
+            <div class="skills">
+              <div class="skill">Calendário editorial <span class="dots" aria-label="Nível 3 de 3"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+              <div class="skill">Reels e edição rápida <span class="dots" aria-label="Nível 2 de 3"><i class="on"></i><i class="on"></i><i></i></span></div>
+              <div class="skill">Design no Canva <span class="dots" aria-label="Nível 2 de 3"><i class="on"></i><i class="on"></i><i></i></span></div>
+              <div class="skill">Métricas básicas <span class="dots" aria-label="Nível 1 de 3"><i class="on"></i><i></i><i></i></span></div>
+            </div>
+          </div>
+          <div class="psec">
+            <h3>Portfólio validado</h3>
+            <div class="proj"><span class="pthumb cover-a"></span><span class="txt"><b>Calendário para loja de moda</b><span>Validado por Ana Souza · nota 5</span></span><span class="pill pill-ok">Validado</span></div>
+            <div class="proj"><span class="pthumb cover-b"></span><span class="txt"><b>Campanha de Dia das Mães</b><span>Validado por Lucas Ramos · nota 4,5</span></span><span class="pill pill-ok">Validado</span></div>
+            <div class="proj"><span class="pthumb cover-c"></span><span class="txt"><b>Reels para cafeteria</b><span>Validado por Ana Souza · nota 4,8</span></span><span class="pill pill-ok">Validado</span></div>
+          </div>
+          <div class="psec">
+            <h3>Cursos concluídos</h3>
+            <div class="proj"><span class="ic ic-acc" style="width:30px;height:30px"><svg class="i"><use href="#i-cap"/></svg></span><span class="txt"><b>Social Media na Prática</b><span>Certificado em out/2026</span></span></div>
+            <div class="proj"><span class="ic ic-acc" style="width:30px;height:30px"><svg class="i"><use href="#i-cap"/></svg></span><span class="txt"><b>Reels que Vendem</b><span>Certificado em set/2026</span></span></div>
+          </div>
+          <p class="note-fee">Contratações feitas pelo Hub+ têm taxa de intermediação. Convites e conversas não têm custo.</p>
+        </section>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<nav class="tabbar" aria-label="Navegação">
+  <button type="button" aria-current="page" data-screen="dashboard"><svg class="i"><use href="#i-home"/></svg>Início</button>
+  <button type="button" data-screen="catalog"><svg class="i"><use href="#i-compass"/></svg>Explorar</button>
+  <button type="button" data-screen="player"><svg class="i"><use href="#i-book"/></svg>Cursos</button>
+  <button type="button" data-screen="talents"><svg class="i"><use href="#i-users"/></svg>Talentos</button>
+  <button type="button" data-screen="wallet"><svg class="i"><use href="#i-wallet"/></svg>Carteira</button>
+</nav>
+
+<script>
+  const NAV = {
+    student: [
+      { label: 'Menu', items: [
+        ['home', 'i-home', 'Início'], ['explore', 'i-compass', 'Explorar cursos'], ['courses', 'i-book', 'Meus cursos', '2'], ['challenges', 'i-trophy', 'Desafios'], ['talents', 'i-briefcase', 'Banco de Talentos']
+      ]},
+      { label: 'Conta', items: [['settings', 'i-settings', 'Configurações'], ['help', 'i-help', 'Ajuda']] }
+    ],
+    mentor: [
+      { label: 'Menu', items: [['home', 'i-home', 'Início'], ['explore', 'i-compass', 'Explorar cursos']] },
+      { label: 'Mentoria', items: [['mycourses', 'i-book', 'Meus cursos'], ['students', 'i-users', 'Alunos'], ['wallet', 'i-wallet', 'Carteira'], ['sales', 'i-receipt', 'Vendas']] },
+      { label: 'Conta', items: [['settings', 'i-settings', 'Configurações'], ['help', 'i-help', 'Ajuda']] }
+    ]
+    ,
+    company: [
+      { label: 'Menu', items: [['home', 'i-home', 'Início'], ['talents', 'i-users', 'Banco de Talentos'], ['saved', 'i-bookmark', 'Perfis salvos', '4'], ['invites', 'i-mail', 'Convites enviados']] },
+      { label: 'Conta', items: [['plan', 'i-verified', 'Plano e selo'], ['settings', 'i-settings', 'Configurações'], ['help', 'i-help', 'Ajuda']] }
+    ]
+  };
+  const USERS = { student: ['MD', 'Maria Eduarda', 'Aluna'], mentor: ['AS', 'Ana Souza', 'Mentora'], company: ['SA', 'Studio Atalaia', 'Empresa'] };
+
+  function renderSide(el) {
+    const role = el.dataset.side, active = el.dataset.active;
+    const groups = NAV[role].map(g => `
+      <div class="nav-group">
+        <div class="nav-label">${g.label}</div>
+        ${g.items.map(([key, icon, label, count]) => `
+          <a class="nav-item" href="#" ${key === active ? 'aria-current="page"' : ''}>
+            <svg class="i"><use href="#${icon}"/></svg>${label}${count ? `<span class="count">${count}</span>` : ''}
+          </a>`).join('')}
+      </div>`).join('');
+    const upsell = role === 'student'
+      ? `<div class="upsell"><span class="ic ic-orange" style="width:30px;height:30px"><svg class="i"><use href="#i-briefcase"/></svg></span><h3>Falta 1 desafio para o Banco de Talentos</h3><p>Empresas de Aracaju já estão buscando perfis em social media.</p><a class="btn btn-primary btn-sm" href="#">Ver desafio</a></div>`
+      : `<div class="upsell"><span class="ic ic-orange" style="width:30px;height:30px"><svg class="i"><use href="#i-plus"/></svg></span><h3>Publique um novo curso</h3><p>Seus alunos pediram um módulo avançado de métricas.</p><a class="btn btn-primary btn-sm" href="#">Criar curso</a></div>`;
+    const [ini, name, kind] = USERS[role];
+    el.innerHTML = `
+      <div class="brand"><span class="mark">HUB+</span><b>Hub+</b></div>
+      ${groups}
+      <div class="grow"></div>
+      ${role === 'company' ? `<div class="upsell"><span class="ic ic-orange" style="width:30px;height:30px"><svg class="i"><use href="#i-verified"/></svg></span><h3>Suba para o Selo Prata</h3><p>Plano Avançado: 100 perfis por mês e relatório de impacto.</p><a class="btn btn-primary btn-sm" href="#">Comparar planos</a></div>` : upsell}
+      <div class="user"><span class="avatar">${ini}</span><div class="meta"><b>${name}</b><span>${kind}</span></div><button class="iconbtn" style="margin-left:auto;width:32px;height:32px;border:0" aria-label="Sair"><svg class="i" style="width:16px;height:16px"><use href="#i-logout"/></svg></button></div>`;
+  }
+  document.querySelectorAll('.side').forEach(renderSide);
+
+  function show(screen) {
+    document.querySelectorAll('.app, .auth').forEach(a => { a.hidden = a.id !== 'screen-' + screen; });
+    document.body.classList.toggle('no-tabbar', screen === 'signup');
+    document.querySelectorAll('.seg [data-screen]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.screen === screen)));
+    document.querySelectorAll('.tabbar [data-screen]').forEach(b => { if (b.dataset.screen === screen) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    window.scrollTo({ top: 0 });
+  }
+  document.querySelectorAll('[data-screen]').forEach(b => b.addEventListener('click', () => show(b.dataset.screen)));
+  document.querySelectorAll('[data-go]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); show(a.dataset.go); }));
+  document.querySelectorAll('a[href="#"]').forEach(a => a.addEventListener('click', e => e.preventDefault()));
+
+  /* Cadastro em 3 passos */
+  (() => {
+    const steps = [...document.querySelectorAll('#screen-signup [data-step]')];
+    const marks = [...document.querySelectorAll('#stepper li')];
+    let cur = 0;
+    const paint = () => {
+      steps.forEach((s, i) => { s.hidden = i !== cur; });
+      marks.forEach((m, i) => { m.className = i < cur ? 'done' : i === cur ? 'now' : ''; });
+    };
+    document.querySelectorAll('#screen-signup [data-next]').forEach(b => b.addEventListener('click', () => { if (cur < steps.length - 1) { cur++; paint(); } }));
+    document.querySelectorAll('#screen-signup [data-back]').forEach(b => b.addEventListener('click', () => { if (cur > 0) { cur--; paint(); } }));
+  })();
+
+  /* Chips e perfis selecionáveis */
+  document.querySelectorAll('.toggle').forEach(t => t.addEventListener('click', () => t.setAttribute('aria-pressed', String(t.getAttribute('aria-pressed') !== 'true'))));
+  document.querySelectorAll('.talent').forEach(c => c.addEventListener('click', () => {
+    document.querySelectorAll('.talent').forEach(o => o.setAttribute('aria-pressed', String(o === c)));
+  }));
+
+  /* Filtros do catálogo: abertos no desktop, recolhidos no celular */
+  (() => {
+    const d = document.getElementById('filters'), mq = matchMedia('(min-width: 1101px)');
+    const sync = () => { d.open = mq.matches; };
+    sync(); mq.addEventListener('change', sync);
+  })();
+
+  const root = document.documentElement;
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const dark = root.dataset.theme === 'dark' || (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.dataset.theme = dark ? 'light' : 'dark';
+  });
+</script>

@@ -1,0 +1,87 @@
+# Plano de criação do Hub+
+
+Status: aprovado em 2026-11-10. MVP (fases 1 a 4) em construção.
+
+## 1. Limites da engenharia reversa
+
+- O REA não está configurado. O setup não aplicou nada e nenhum motor de análise (Ghidra, jadx etc.) está instalado.
+- A skill serve para binários e artefatos empacotados. Alura, Udemy, DIO e Rocketseat são aplicações web, então só a superfície pública das páginas foi analisada.
+- A Udemy bloqueou a leitura (HTTP 403). Para ela foi usado conhecimento geral, sem verificação.
+- O Instagram exige login, então o logo do Hub+ não foi baixado. O arquivo precisa ser colocado em `docs/`.
+- Nada dentro das áreas logadas (player, fóruns, painel do instrutor) foi analisado. Isso exige prints ou HARs, ou o REA configurado.
+
+## 2. Análise dos concorrentes
+
+| Plataforma | Estrutura | O que aproveitar |
+|---|---|---|
+| Alura | Áreas, 37 carreiras, níveis, planos anuais, Empregabilidade em todos os planos, comunidade, assistente de IA | Trilha com checkpoints práticos, certificados, vagas como parte do plano |
+| DIO | Bootcamps gratuitos com empresas, trilhas, desafios reais, projetos de portfólio, comunidade, vagas, "Para Empresas" | Modelo mais próximo do Hub+: curso, portfólio e vaga |
+| Rocketseat | Assinatura, formações, "Para Empresas", "Para Escolas" | Formações em sequência e contas de empresa |
+| Udemy | Venda avulsa por curso, divisão de receita com o instrutor, avaliações, perguntas e respostas | Venda por curso com divisão de receita, como no modelo do Hub+ |
+
+Os documentos em `docs/` definem o diferencial do Hub+: trilhas curtas de 4 a 6 semanas, desafios reais, Banco de Talentos e recomendação inteligente. Também definem os planos corporativos Essencial, Avançado e Premium, os selos Bronze, Prata e Ouro, e os relatórios de impacto.
+
+## 3. Perfis (CASL)
+
+O repositório `hubmais-tech/api` tem 3 perfis (user, mentor, organization_admin). Decidido: 4 perfis (ver `DECISIONS.md`, D1 e D2).
+
+- **student:** compra cursos, faz desafios, mantém o portfólio e participa do Banco de Talentos.
+- **mentor:** cria e publica cursos, corrige desafios, vê a carteira e saca a receita.
+- **company:** busca talentos, contrata e assina um plano.
+- **admin:** curadoria, relatórios de impacto, doações e selos, carteira do Hub+.
+
+Patrocinadores não têm perfil. Doam diretamente ao Hub+ e recebem selo e relatório, emitidos pelo admin.
+
+## 4. Módulos do produto
+
+**MVP (fases 1 a 4):**
+
+1. Auth: cadastro, login por senha e recuperação de senha.
+2. Cursos: curso, módulo e aula, com preço em ingressos (como no repositório base). Vídeos e capas no Cloudflare R2.
+3. Compra e carteira: gateway atrás de uma interface (Stripe, ver `DECISIONS.md`, D4) e carteira com ledger interno, estilo Kiwify, com saldo pendente, disponível e saque por Pix. A divisão de receita é feita na compra.
+4. Aluno: progresso por aula, desafios com entrega e feedback do mentor, certificado.
+5. Portfólio e Banco de Talentos: perfil público do aluno com projetos validados.
+6. Empresas: cadastro, busca com filtros e contratação.
+
+**Fase 2 (depois do MVP):** planos corporativos com selos, registro de doações de empresas com selo e relatório (sem perfil de patrocinador), carteira do Hub+ no perfil admin, relatórios de impacto, período de experiência gratuito e recomendação inteligente.
+
+## 5. Backend (`api/`)
+
+- **Stack:** Node, Fastify 5, Drizzle, Postgres, Zod, CASL, JWT e Cloudflare R2 pelo SDK do S3.
+- **Estrutura:** a do `hubmais-tech/api`: `src/auth` (models, subjects, permissions), `database/schema`, `http/routes/<módulo>`, `http/middlewares`, `services`, `utils`, `env.ts`.
+- **Do course-saas-next-rbac:** permissões por perfil com `getUserPermissions` e rotas com erros tipados.
+- **Correções ao repositório de base:**
+  - Sem CPF obrigatório no cadastro de aluno.
+  - Slug de aula único por curso, não global.
+  - Upload com URL pré-assinada para vídeo grande, não multipart pela API.
+  - Dinheiro sempre em centavos.
+  - Sem soft-delete parcial.
+- **Tabelas principais:** `users`, `student_profiles`, `companies`, `courses`, `course_tickets`, `modules`, `lessons`, `enrollments`, `lesson_progress`, `challenges`, `submissions`, `orders`, `wallets`, `ledger_entries`, `withdrawals`, `portfolio_items`, `job_requests`, `hires`. Na fase 2: `donations`.
+
+## 6. Front-end (`web/`)
+
+- **Stack:** React, Vite, Tailwind v4, shadcn, lucide, sonner, axios e TanStack Query.
+- **Roteamento:** o React Router não está na stack pedida. Proposta de incluí-lo, porque o Vite sozinho não resolve rotas.
+- **Telas:** catálogo, página do curso, player, painel do aluno, painel do mentor, painel da empresa, Banco de Talentos, carteira e login.
+
+## 7. Design system
+
+- **Cores principais:** roxo `#5900B0`, areia `#F3CC9F` e laranja `#F26303`.
+- **Tema:** escuro como padrão, com fundo quase preto e cartões levemente elevados, como nas imagens de referência.
+- **Detalhes:** fundo de partículas discretas na tela de login, cadastro de empresa em passos com barra de progresso (referência Wellhub) e tela de primeiro acesso inspirada em "Crie sua primeira loja".
+- **Escalas:** escalas de 50 a 950 geradas a partir das três cores, com teste de contraste.
+- **Logo:** `docs/images/logo-hubmais-instagram.jpg` (letras brancas "HUB+" sobre degradê vermelho-alaranjado). O arquivo tem só 150x150 px, então é preciso o original em alta resolução ou SVG.
+
+## 8. Fases
+
+1. Estrutura dos dois projetos, banco no Docker, `env`, CI mínima e design system.
+2. Auth, perfis e CASL, com testes.
+3. Cursos, upload no R2 e catálogo.
+4. Compra, carteira e matrícula, com o Stripe em modo de teste.
+5. Aluno: progresso, desafios e certificado.
+6. Portfólio, Banco de Talentos e área da empresa.
+7. Fase 2.
+
+## 9. Decisões
+
+Decisões tomadas e pendentes estão em `DECISIONS.md`. Pendentes: logo em alta resolução (A6), doações de empresas (A8) e Pix/Connect no Stripe (A9).
