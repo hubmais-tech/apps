@@ -104,6 +104,7 @@ Tema claro por padrão, escuro opcional. Painel de SaaS limpo, com o roxo `#5900
 | [docs/FLOWS.md](docs/FLOWS.md) | Fluxos de cada perfil, do cadastro ao resultado |
 | [docs/API.md](docs/API.md) | Referência das rotas |
 | [docs/DATA-MODEL.md](docs/DATA-MODEL.md) | Tabelas e regras de dados |
+| [docs/BACKLOG.md](docs/BACKLOG.md) | Backlog, releases, plano de sprints e riscos. Gerado de `docs/jira/` |
 | [CLAUDE.md](CLAUDE.md) | Contexto do projeto para o Claude Code |
 
 ## Idioma

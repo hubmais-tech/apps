@@ -89,6 +89,8 @@ Situação em 2026-11-10.
 
 ### Fase 2: pendências de produto
 
+O detalhamento em épicos e histórias, com estimativas e plano de sprints, está em `BACKLOG.md`.
+
 Dependem de decisões do responsável (ver "Decisões abertas" em `DECISIONS.md`):
 
 - **Planos corporativos e selos** (Essencial, Avançado, Premium; Bronze, Prata, Ouro): limites e preços em A10.
@@ -112,6 +114,7 @@ Dependem de decisões do responsável (ver "Decisões abertas" em `DECISIONS.md`
 - `FLOWS.md`: fluxos de cada perfil, do cadastro ao resultado.
 - `API.md`: referência das rotas.
 - `DATA-MODEL.md`: tabelas e regras de dados.
+- `BACKLOG.md`: backlog por épico, releases, plano das primeiras sprints, decisões que bloqueiam e riscos. Gerado de `jira/backlog.data.mjs`; o CSV de importação do Jira fica em `jira/hub-backlog.csv`.
 - `design/mockup-workspace.html`: protótipo aprovado do design.
 
 ## 10. Decisões

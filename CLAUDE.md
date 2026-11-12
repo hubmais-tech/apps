@@ -8,6 +8,7 @@ Fases 1 a 6 do plano e o onboarding por perfil estão implementados e testados. 
 
 - `PLAN.md`: plano e situação das fases. `DECISIONS.md`: decisões (D1 a D22) e pendências (A6 a A14).
 - `FLOWS.md`: fluxo de cada perfil. `API.md`: rotas. `DATA-MODEL.md`: tabelas.
+- `BACKLOG.md`: backlog do que falta desenvolver. **É gerado:** edite `docs/jira/backlog.data.mjs` e rode `node docs/jira/build.mjs` (gera também o CSV de importação do Jira). Nunca edite o `BACKLOG.md` à mão.
 
 **Ao mudar comportamento, rota ou tabela, atualize o documento correspondente na mesma tarefa.** Decisão nova vai em `DECISIONS.md`; o que ficar em aberto vira item "A" ali.
 
