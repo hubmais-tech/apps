@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { ArrowRight, Briefcase, GraduationCap, Presentation } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { AuthShell } from '@/components/auth-shell'
@@ -22,7 +22,7 @@ type SelfRole = (typeof roles)[number]['value']
 
 /** Cadastro em dois passos: perfil e dados. Não pedimos CPF (docs/DECISIONS.md). */
 export function RegisterPage() {
-  const { signIn } = useAuth()
+  const { user, signIn } = useAuth()
   const navigate = useNavigate()
 
   const [step, setStep] = useState<1 | 2>(1)
@@ -39,7 +39,7 @@ export function RegisterPage() {
     onSuccess: async (data) => {
       await signIn(data.token)
       toast.success('Conta criada com sucesso!')
-      navigate(data.user.role === 'mentor' ? '/mentor/courses' : '/', { replace: true })
+      navigate('/onboarding', { replace: true })
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   })
@@ -48,6 +48,9 @@ export function RegisterPage() {
     event.preventDefault()
     register.mutate()
   }
+
+  // Quem já está logado não precisa se cadastrar de novo. Durante o próprio cadastro, quem navega é o onSuccess.
+  if (user && !register.isPending && !register.isSuccess) return <Navigate to="/" replace />
 
   const labels = ['Perfil', 'Seus dados']
 

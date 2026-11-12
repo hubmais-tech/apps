@@ -4,7 +4,8 @@ import { z } from 'zod'
 
 import { asSubject, defineAbilityFor, type AuthUser } from '@/auth'
 import { database } from '@/database/connection'
-import { users, withdrawals } from '@/database/schema'
+import { mentorAccounts, users, withdrawals } from '@/database/schema'
+import { type PixKeyType, normalizePixKey, pixKeyTypes } from '@/utils/documents'
 import { env } from '@/env'
 import {
   getBalances,
@@ -15,7 +16,7 @@ import {
   type WalletOwner,
 } from '@/services/wallet'
 
-import { ForbiddenError } from '../errors/http-errors'
+import { BadRequestError, ForbiddenError } from '../errors/http-errors'
 
 const scopeSchema = z.enum(['me', 'platform']).default('me')
 
@@ -108,16 +109,30 @@ export const walletRoutes: FastifyPluginAsyncZod = async (app) => {
         body: z.object({
           scope: scopeSchema,
           amountInCents: z.number().int().positive(),
-          pixKey: z.string().trim().min(3),
-          pixKeyType: z.enum(['cpf', 'cnpj', 'email', 'phone', 'random']),
+          // O mentor saca para a chave cadastrada na carteira (D13). Só o admin informa a chave aqui.
+          pixKey: z.string().trim().min(3).optional(),
+          pixKeyType: z.enum(pixKeyTypes).optional(),
         }),
         response: { 201: z.object({ withdrawalId: z.uuid() }) },
       },
     },
     async (request, reply) => {
       const user = await request.requireUser()
-      const { scope, amountInCents, pixKey, pixKeyType } = request.body
+      const { scope, amountInCents } = request.body
       const owner = resolveOwner(user, scope, 'create')
+
+      let pixKey: string | null
+      let pixKeyType: PixKeyType
+      if (owner === null) {
+        pixKeyType = request.body.pixKeyType ?? 'cnpj'
+        pixKey = request.body.pixKey ? normalizePixKey(pixKeyType, request.body.pixKey) : null
+        if (!pixKey) throw new BadRequestError('Informe uma chave Pix válida para o saque do Hub+.')
+      } else {
+        const [account] = await database.select().from(mentorAccounts).where(eq(mentorAccounts.userId, owner))
+        if (!account) throw new ForbiddenError('Abra a carteira antes de sacar.')
+        pixKey = account.pixKey
+        pixKeyType = account.pixKeyType as PixKeyType
+      }
 
       const withdrawal = await database.transaction((tx) =>
         requestWithdrawal(tx, {
@@ -140,7 +155,14 @@ export const walletRoutes: FastifyPluginAsyncZod = async (app) => {
         querystring: z.object({ status: z.enum(['requested', 'paid', 'rejected']).optional() }),
         response: {
           200: z.object({
-            withdrawals: z.array(withdrawalSchema.extend({ ownerName: z.string() })),
+            withdrawals: z.array(
+              withdrawalSchema.extend({
+                ownerName: z.string(),
+                ownerFullName: z.string().nullable(),
+                ownerCpf: z.string().nullable(),
+                ownerPhone: z.string().nullable(),
+              }),
+            ),
           }),
         },
       },
@@ -150,17 +172,22 @@ export const walletRoutes: FastifyPluginAsyncZod = async (app) => {
       if (!defineAbilityFor(user).can('manage', 'Withdrawal')) throw new ForbiddenError('Acesso restrito.')
 
       const rows = await database
-        .select({ withdrawal: withdrawals, ownerName: users.name })
+        .select({ withdrawal: withdrawals, ownerName: users.name, account: mentorAccounts })
         .from(withdrawals)
         .leftJoin(users, eq(users.id, withdrawals.userId))
+        .leftJoin(mentorAccounts, eq(mentorAccounts.userId, withdrawals.userId))
         .where(request.query.status ? eq(withdrawals.status, request.query.status) : undefined)
         .orderBy(desc(withdrawals.requestedAt))
         .limit(100)
 
       return {
-        withdrawals: rows.map(({ withdrawal, ownerName }) => ({
+        // Só o admin que paga o saque vê o CPF completo (D13).
+        withdrawals: rows.map(({ withdrawal, ownerName, account }) => ({
           ...withdrawal,
           ownerName: ownerName ?? 'Hub+ (plataforma)',
+          ownerFullName: account?.fullName ?? null,
+          ownerCpf: account?.cpf ?? null,
+          ownerPhone: account?.phone ?? null,
         })),
       }
     },

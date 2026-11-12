@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { AuthShell } from '@/components/auth-shell'
@@ -11,7 +11,7 @@ import { api, getErrorMessage, type User } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 
 export function LoginPage() {
-  const { signIn } = useAuth()
+  const { user, signIn } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: string } | null)?.from ?? '/'
@@ -35,6 +35,9 @@ export function LoginPage() {
     event.preventDefault()
     login.mutate()
   }
+
+  // Quem já está logado não precisa ver o login. Durante o próprio login, quem navega é o onSuccess.
+  if (user && !login.isPending && !login.isSuccess) return <Navigate to="/" replace />
 
   return (
     <AuthShell

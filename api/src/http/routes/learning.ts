@@ -2,26 +2,29 @@ import { and, asc, eq, inArray } from 'drizzle-orm'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 
-import { asSubject, defineAbilityFor, type AuthUser } from '@/auth'
 import { database } from '@/database/connection'
 import {
+  certificates,
+  challenges,
   courses,
   enrollments,
   lessonProgress,
   lessons,
   modules,
+  submissions,
   users,
 } from '@/database/schema'
+import { canAccessCourse } from '@/services/access'
+import { getCompletion, issueCertificateIfComplete } from '@/services/certificates'
 import { createReadUrl, publicUrl } from '@/services/storage'
 
 import { ForbiddenError, NotFoundError } from '../errors/http-errors'
 
-async function canAccessCourse(user: AuthUser, course: typeof courses.$inferSelect) {
-  if (defineAbilityFor(user).can('update', asSubject('Course', course))) return true
+async function isStudent(userId: string, courseId: string) {
   const [enrollment] = await database
     .select({ id: enrollments.id })
     .from(enrollments)
-    .where(and(eq(enrollments.userId, user.id), eq(enrollments.courseId, course.id)))
+    .where(and(eq(enrollments.userId, userId), eq(enrollments.courseId, courseId)))
   return Boolean(enrollment)
 }
 
@@ -98,6 +101,30 @@ export const learningRoutes: FastifyPluginAsyncZod = async (app) => {
         response: {
           200: z.object({
             course: z.object({ id: z.uuid(), title: z.string(), slug: z.string() }),
+            completion: z.object({
+              totalLessons: z.number(),
+              completedLessons: z.number(),
+              totalChallenges: z.number(),
+              approvedChallenges: z.number(),
+              complete: z.boolean(),
+            }),
+            certificateCode: z.string().nullable(),
+            challenges: z.array(
+              z.object({
+                id: z.uuid(),
+                title: z.string(),
+                brief: z.string(),
+                criteria: z.string().nullable(),
+                submission: z
+                  .object({
+                    id: z.uuid(),
+                    status: z.enum(['submitted', 'changes_requested', 'approved']),
+                    attempt: z.number(),
+                    feedback: z.string().nullable(),
+                  })
+                  .nullable(),
+              }),
+            ),
             modules: z.array(
               z.object({
                 id: z.uuid(),
@@ -150,8 +177,29 @@ export const learningRoutes: FastifyPluginAsyncZod = async (app) => {
         .where(eq(lessonProgress.userId, user.id))
       const doneSet = new Set(done.map((d) => d.lessonId))
 
+      const challengeRows = await database.select().from(challenges).where(eq(challenges.courseId, course.id)).orderBy(asc(challenges.position), asc(challenges.createdAt))
+      const mySubmissions = challengeRows.length
+        ? await database
+            .select()
+            .from(submissions)
+            .where(and(eq(submissions.userId, user.id), inArray(submissions.challengeId, challengeRows.map((c) => c.id))))
+        : []
+      const [certificate] = await database.select().from(certificates).where(and(eq(certificates.userId, user.id), eq(certificates.courseId, course.id)))
+
       return {
         course: { id: course.id, title: course.title, slug: course.slug },
+        completion: await getCompletion(database, user.id, course.id),
+        certificateCode: certificate?.code ?? null,
+        challenges: challengeRows.map((c) => {
+          const mine = mySubmissions.find((s) => s.challengeId === c.id)
+          return {
+            id: c.id,
+            title: c.title,
+            brief: c.brief,
+            criteria: c.criteria,
+            submission: mine ? { id: mine.id, status: mine.status, attempt: mine.attempt, feedback: mine.feedback } : null,
+          }
+        }),
         modules: mods.map((mod) => ({
           id: mod.id,
           title: mod.title,
@@ -198,9 +246,9 @@ export const learningRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/lessons/:id/complete',
     {
-      schema: { params: z.object({ id: z.uuid() }), response: { 204: z.null() } },
+      schema: { params: z.object({ id: z.uuid() }), response: { 200: z.object({ certificateCode: z.string().nullable() }) } },
     },
-    async (request, reply) => {
+    async (request) => {
       const user = await request.requireUser()
       const [row] = await database
         .select({ course: courses })
@@ -219,7 +267,9 @@ export const learningRoutes: FastifyPluginAsyncZod = async (app) => {
         .values({ userId: user.id, lessonId: request.params.id })
         .onConflictDoNothing()
 
-      return reply.status(204).send(null)
+      // Só o aluno matriculado ganha certificado, e só se concluiu aulas e desafios (D16).
+      const issued = (await isStudent(user.id, row.course.id)) ? await issueCertificateIfComplete(user.id, row.course.id) : null
+      return { certificateCode: issued?.certificate?.code ?? null }
     },
   )
 }

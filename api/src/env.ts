@@ -19,6 +19,9 @@ const envSchema = z
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
     PLATFORM_FEE_PERCENT: z.coerce.number().min(0).max(100).default(20),
+    // Estimativa da taxa do meio de pagamento, descontada do mentor (D22). Padrão: cartão no Stripe Brasil.
+    GATEWAY_FEE_PERCENT: z.coerce.number().min(0).max(100).default(3.99),
+    GATEWAY_FEE_FIXED_IN_CENTS: z.coerce.number().int().min(0).default(39),
     WALLET_HOLD_DAYS: z.coerce.number().int().min(0).default(7),
     MIN_WITHDRAWAL_IN_CENTS: z.coerce.number().int().min(0).default(5000),
 

@@ -1,0 +1,1 @@
+ALTER TABLE "orders" ADD COLUMN "gatewayFeeInCents" integer DEFAULT 0 NOT NULL;

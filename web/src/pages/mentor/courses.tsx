@@ -1,16 +1,12 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
+import { useQuery } from '@tanstack/react-query'
+import { Pencil, Plus, Users } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
+import { CourseCover } from '@/components/course-card'
 import { EmptyState, ErrorState, Loading, PageHeader } from '@/components/query-state'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input, Textarea } from '@/components/ui/input'
-import { Field } from '@/components/ui/label'
-import { api, getErrorMessage } from '@/lib/api'
+import { api } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
 
 type MentorCourse = {
@@ -24,93 +20,62 @@ type MentorCourse = {
 }
 
 export function MentorCoursesPage() {
-  const navigate = useNavigate()
-  const [creating, setCreating] = useState(false)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [price, setPrice] = useState('')
-
   const courses = useQuery({
     queryKey: ['mentor-courses'],
     queryFn: async () => (await api.get<{ courses: MentorCourse[] }>('/me/courses')).data.courses,
   })
 
-  const create = useMutation({
-    mutationFn: async () => {
-      const priceInCents = Math.round(Number(price.replace(',', '.')) * 100)
-      return (await api.post<{ courseId: string }>('/courses', { title, description: description || undefined, priceInCents })).data
-    },
-    onSuccess: ({ courseId }) => {
-      toast.success('Curso criado. Agora monte os módulos e aulas.')
-      navigate(`/mentor/courses/${courseId}`)
-    },
-    onError: (error) => toast.error(getErrorMessage(error)),
-  })
-
-  function onSubmit(event: FormEvent) {
-    event.preventDefault()
-    create.mutate()
-  }
-
   return (
-    <div className="space-y-6">
+    <div>
       <PageHeader
         title="Meus cursos"
         description="Crie cursos, envie as aulas e acompanhe as vendas."
         actions={
-          <Button onClick={() => setCreating((value) => !value)}>
-            <Plus /> Novo curso
+          <Button asChild>
+            <Link to="/mentor/courses/new">
+              <Plus /> Novo curso
+            </Link>
           </Button>
         }
       />
 
-      {creating && (
-        <Card className="p-5">
-          <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <Field label="Título" htmlFor="title">
-                <Input id="title" required minLength={3} value={title} onChange={(e) => setTitle(e.target.value)} />
-              </Field>
-            </div>
-            <div className="sm:col-span-2">
-              <Field label="Descrição" htmlFor="description">
-                <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
-              </Field>
-            </div>
-            <Field label="Preço (R$)" htmlFor="price" hint="Mínimo de R$ 5,00.">
-              <Input id="price" inputMode="decimal" required placeholder="99,90" value={price} onChange={(e) => setPrice(e.target.value)} />
-            </Field>
-            <div className="flex items-end">
-              <Button type="submit" loading={create.isPending}>
-                Criar e continuar
-              </Button>
-            </div>
-          </form>
-        </Card>
-      )}
-
       {courses.isLoading && <Loading />}
       {courses.isError && <ErrorState onRetry={() => courses.refetch()} />}
-      {courses.data && courses.data.length === 0 && !creating && <EmptyState>Você ainda não criou nenhum curso.</EmptyState>}
+      {courses.data && courses.data.length === 0 && (
+        <EmptyState>
+          <p className="mb-3">Você ainda não criou nenhum curso. Leva poucos minutos para começar.</p>
+          <Button asChild>
+            <Link to="/mentor/courses/new">
+              <Plus /> Criar meu primeiro curso
+            </Link>
+          </Button>
+        </EmptyState>
+      )}
       {courses.data && courses.data.length > 0 && (
-        <div className="space-y-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {courses.data.map((course) => (
-            <Card key={course.id} className="flex flex-wrap items-center justify-between gap-4 p-4">
-              <div className="space-y-1">
-                <Link to={`/mentor/courses/${course.id}`} className="font-semibold hover:underline">
-                  {course.title}
-                </Link>
-                <p className="text-sm text-muted-foreground">
-                  {formatCurrency(course.priceInCents)} · {course.salesCount} {course.salesCount === 1 ? 'aluno' : 'alunos'}
+            <article key={course.id} className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
+              <Link to={`/mentor/courses/${course.id}`} className="outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Editar ${course.title}`}>
+                <CourseCover url={course.coverUrl} title={course.title} seed={course.slug} />
+              </Link>
+              <div className="flex flex-1 flex-col gap-3 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="line-clamp-2 text-[15px] leading-snug font-semibold">{course.title}</h3>
+                  <Badge variant={course.isPublished ? 'success' : 'default'}>{course.isPublished ? 'Publicado' : 'Rascunho'}</Badge>
+                </div>
+                <p className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="font-heading text-sm font-semibold text-foreground tabular">{formatCurrency(course.priceInCents)}</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Users className="size-3.5" /> {course.salesCount} {course.salesCount === 1 ? 'aluno' : 'alunos'}
+                  </span>
                 </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant={course.isPublished ? 'success' : 'default'}>{course.isPublished ? 'Publicado' : 'Rascunho'}</Badge>
-                <Button variant="outline" size="sm" asChild>
-                  <Link to={`/mentor/courses/${course.id}`}>Editar</Link>
+                <Button variant="secondary" size="sm" className="mt-auto" asChild>
+                  <Link to={`/mentor/courses/${course.id}`}>
+                    <Pencil /> {course.isPublished ? 'Editar curso' : 'Continuar montando'}
+                  </Link>
                 </Button>
               </div>
-            </Card>
+            </article>
           ))}
         </div>
       )}

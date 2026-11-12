@@ -13,9 +13,16 @@ import { env } from '@/env'
 import { errorHandler } from './error-handler'
 import { authPlugin } from './plugins/auth'
 import { authRoutes } from './routes/auth'
+import { challengeRoutes } from './routes/challenges'
+import { dashboardRoutes } from './routes/dashboard'
 import { checkoutRoutes, webhookRoutes } from './routes/checkout'
+import { companyRoutes } from './routes/company'
 import { courseRoutes } from './routes/courses'
 import { learningRoutes } from './routes/learning'
+import { portfolioRoutes } from './routes/portfolio'
+import { pricingRoutes } from './routes/pricing'
+import { profileRoutes } from './routes/profile'
+import { talentRoutes } from './routes/talents'
 import { walletRoutes } from './routes/wallet'
 
 export function buildApp() {
@@ -37,8 +44,15 @@ export function buildApp() {
   app.get('/health', async () => ({ status: 'ok' }))
 
   app.register(authRoutes)
+  app.register(profileRoutes)
+  app.register(companyRoutes)
+  app.register(pricingRoutes)
   app.register(courseRoutes)
   app.register(learningRoutes)
+  app.register(challengeRoutes)
+  app.register(portfolioRoutes)
+  app.register(talentRoutes)
+  app.register(dashboardRoutes)
   app.register(checkoutRoutes)
   app.register(walletRoutes)
   app.register(webhookRoutes)

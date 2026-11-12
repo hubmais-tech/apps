@@ -67,21 +67,53 @@ Patrocinadores não têm perfil. Doam diretamente ao Hub+ e recebem selo e relat
 ## 7. Design system
 
 - **Cores principais:** roxo `#5900B0`, areia `#F3CC9F` e laranja `#F26303`.
-- **Tema:** escuro como padrão, com fundo quase preto e cartões levemente elevados, como nas imagens de referência.
+- **Tema:** claro como padrão, escuro opcional (D11). Painel de SaaS limpo, protótipo aprovado em `docs/design/mockup-workspace.html`.
 - **Detalhes:** fundo de partículas discretas na tela de login, cadastro de empresa em passos com barra de progresso (referência Wellhub) e tela de primeiro acesso inspirada em "Crie sua primeira loja".
 - **Escalas:** escalas de 50 a 950 geradas a partir das três cores, com teste de contraste.
 - **Logo:** `docs/images/logo-hubmais-instagram.jpg` (letras brancas "HUB+" sobre degradê vermelho-alaranjado). O arquivo tem só 150x150 px, então é preciso o original em alta resolução ou SVG.
 
 ## 8. Fases
 
-1. Estrutura dos dois projetos, banco no Docker, `env`, CI mínima e design system.
-2. Auth, perfis e CASL, com testes.
-3. Cursos, upload no R2 e catálogo.
-4. Compra, carteira e matrícula, com o Stripe em modo de teste.
-5. Aluno: progresso, desafios e certificado.
-6. Portfólio, Banco de Talentos e área da empresa.
-7. Fase 2.
+Situação em 2026-11-10.
 
-## 9. Decisões
+| # | Fase | Situação |
+|---|---|---|
+| 1 | Estrutura dos dois projetos, banco no Docker, `env` e design system | Concluída. Falta CI mínima |
+| 2 | Auth, perfis e CASL, com testes | Concluída |
+| 3 | Cursos, upload no R2 e catálogo | Concluída. Construtor guiado com dropzone (D20) |
+| 4 | Compra, carteira e matrícula (Stripe em modo de teste) | Concluída. Stripe real e R2 real ainda sem teste com chaves |
+| 5 | Aluno: progresso, desafios, certificado | Concluída (D16, D19) |
+| 6 | Portfólio, Banco de Talentos e área da empresa | Concluída, sem planos e sem taxa de contratação (A10, A12) |
+| — | Onboarding por perfil, carteira do mentor com CPF e Pix, empresa com CNPJ e representantes | Concluída (D12, D13, D14) |
+| 7 | Fase 2 (ver abaixo) | **Não iniciada** |
 
-Decisões tomadas e pendentes estão em `DECISIONS.md`. Pendentes: logo em alta resolução (A6), doações de empresas (A8) e Pix/Connect no Stripe (A9).
+### Fase 2: pendências de produto
+
+Dependem de decisões do responsável (ver "Decisões abertas" em `DECISIONS.md`):
+
+- **Planos corporativos e selos** (Essencial, Avançado, Premium; Bronze, Prata, Ouro): limites e preços em A10.
+- **Doações de empresas** com selo e relatório de impacto, sem perfil de patrocinador: forma de recebimento em A8.
+- **Taxa de intermediação** sobre contratações: percentual e cobrança em A12.
+- **E-mail transacional** (convites de representantes, recuperação de senha, avisos): provedor em A11.
+- **Verificação de identidade** do mentor e antifraude de saque: A13.
+- **Período de experiência gratuito** e **recomendação inteligente** de cursos e talentos.
+- **Stripe real** (A9) e **logo em alta resolução** (A6).
+
+### Ideias que não entraram
+
+- Chat entre empresa e talento (hoje o contato é por e-mail e WhatsApp, só após o aceite).
+- Notificações dentro da plataforma (sino). Hoje os painéis mostram as pendências.
+- Recuperação de senha e troca de senha pela conta (dependem de A11).
+- Geração de certificado em PDF no servidor (hoje é página HTML para imprimir).
+
+## 9. Documentação
+
+- `DECISIONS.md`: decisões tomadas (D1 a D22) e pendentes (A6 a A14).
+- `FLOWS.md`: fluxos de cada perfil, do cadastro ao resultado.
+- `API.md`: referência das rotas.
+- `DATA-MODEL.md`: tabelas e regras de dados.
+- `design/mockup-workspace.html`: protótipo aprovado do design.
+
+## 10. Decisões
+
+Decisões tomadas e pendentes estão em `DECISIONS.md`. Pendentes: logo em alta resolução (A6), doações de empresas (A8), Pix/Connect no Stripe (A9), planos corporativos (A10), e-mail transacional (A11), taxa de contratação (A12) e verificação do mentor (A13).

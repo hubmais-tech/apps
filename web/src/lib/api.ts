@@ -83,3 +83,56 @@ export type WalletData = {
   entries: WalletEntry[]
   withdrawals: Withdrawal[]
 }
+
+export type Onboarding = { required: boolean; completed: boolean; path: string | null }
+
+export type StudentProfile = {
+  birthDate: string | null
+  city: string | null
+  neighborhood: string | null
+  phone: string | null
+  interests: string[]
+  goal: string | null
+  headline: string | null
+  bio: string | null
+  talentVisible: boolean
+  onboardingCompleted: boolean
+  onboardingSkipped: boolean
+}
+
+export type MentorAccount = {
+  fullName: string
+  cpfMasked: string
+  birthDate: string
+  phone: string
+  pixKeyType: 'cpf' | 'cnpj' | 'email' | 'phone' | 'random'
+  pixKeyMasked: string
+  bio: string
+  expertise: string[]
+  openedAt: string
+}
+
+export type CompanyMember = {
+  id: string
+  name: string
+  jobTitle: string
+  email: string
+  phone: string | null
+  isPrimary: boolean
+  status: 'active' | 'pending' | 'expired'
+}
+
+export type Company = {
+  id: string
+  cnpj: string
+  legalName: string
+  tradeName: string
+  sector: string
+  size: 'mei' | 'micro' | 'small' | 'medium' | 'large'
+  city: string
+  state: string
+  website: string | null
+  about: string | null
+  isOwner: boolean
+  members: CompanyMember[]
+}

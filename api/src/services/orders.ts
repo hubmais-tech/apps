@@ -4,9 +4,28 @@ import type { Transaction } from '@/database/connection'
 import { enrollments, ledgerEntries, orders } from '@/database/schema'
 import { env } from '@/env'
 
-export function splitAmount(amountInCents: number) {
-  const platformFeeInCents = Math.round((amountInCents * env.PLATFORM_FEE_PERCENT) / 100)
-  return { platformFeeInCents, mentorAmountInCents: amountInCents - platformFeeInCents }
+export type FeeConfig = { platformPercent: number; gatewayPercent: number; gatewayFixedInCents: number }
+
+const currentFees = (): FeeConfig => ({
+  platformPercent: env.PLATFORM_FEE_PERCENT,
+  gatewayPercent: env.GATEWAY_FEE_PERCENT,
+  gatewayFixedInCents: env.GATEWAY_FEE_FIXED_IN_CENTS,
+})
+
+/**
+ * Divide o valor pago entre Hub+, gateway e mentor (D22). Tudo em centavos inteiros.
+ * A retenção do Hub+ é um percentual do valor pago. A taxa do gateway é estimada (percentual mais valor fixo)
+ * e descontada do mentor. O mentor recebe o que sobra, então a soma das três partes é sempre o valor pago.
+ */
+export function splitAmount(amountInCents: number, fees: FeeConfig = currentFees()) {
+  const platformFeeInCents = Math.round((amountInCents * fees.platformPercent) / 100)
+  const gatewayFeeInCents = Math.round((amountInCents * fees.gatewayPercent) / 100) + fees.gatewayFixedInCents
+  const mentorAmountInCents = amountInCents - platformFeeInCents - gatewayFeeInCents
+  if (mentorAmountInCents < 0) {
+    // O preço mínimo do curso impede isso; se acontecer, falhar é melhor que pagar o mentor com valor negativo.
+    throw new Error('As taxas superam o valor do curso.')
+  }
+  return { platformFeeInCents, gatewayFeeInCents, mentorAmountInCents }
 }
 
 function addDays(date: Date, days: number) {

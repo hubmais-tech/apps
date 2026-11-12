@@ -11,12 +11,22 @@ export type SubjectName =
   | 'Wallet'
   | 'Withdrawal'
   | 'PlatformWallet'
+  | 'MentorAccount'
+  | 'Company'
+  | 'Talent'
 
 // Subject solto (any) para que o CASL aceite condições por campo (ex.: { mentorId }).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AppAbility = MongoAbility<[Action, any]>
 
-export type AuthUser = { id: string; role: Role }
+export type AuthUser = {
+  id: string
+  role: Role
+  /** Mentor com a carteira aberta (D13). Sem isso, não cria curso nem vê a carteira. */
+  walletOpened?: boolean
+  /** Empresa do representante, quando o cadastro da empresa já foi feito (D14). */
+  companyId?: string | null
+}
 
 type PermissionsByRole = (user: AuthUser, builder: AbilityBuilder<AppAbility>) => void
 
@@ -30,9 +40,12 @@ const permissions: Record<Role, PermissionsByRole> = {
   mentor(user, { can }) {
     can(['get', 'update'], 'User', { id: user.id })
     can('get', 'Course', { isPublished: true })
+    can('create', 'Order')
+    can(['get', 'update'], 'MentorAccount', { userId: user.id })
+    // Tudo abaixo exige a carteira aberta (D13).
+    if (!user.walletOpened) return
     can('get', 'Course', { mentorId: user.id })
     can('create', 'Course')
-    can('create', 'Order')
     can(['update', 'delete', 'publish'], 'Course', { mentorId: user.id })
     can('get', 'Wallet', { userId: user.id })
     can('create', 'Withdrawal', { userId: user.id })
@@ -42,6 +55,11 @@ const permissions: Record<Role, PermissionsByRole> = {
     can(['get', 'update'], 'User', { id: user.id })
     can('get', 'Course', { isPublished: true })
     can('create', 'Order')
+    if (user.companyId) {
+      can(['get', 'update'], 'Company', { id: user.companyId })
+      // Banco de Talentos: só para empresa com cadastro completo (D18).
+      can('get', 'Talent')
+    }
   },
   admin(_user, { can }) {
     can('manage', 'all')

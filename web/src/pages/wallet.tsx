@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowDownLeft, ArrowUpRight, Clock, HelpCircle, Landmark, Receipt, RotateCcw, ShoppingBag, Wallet as WalletIcon } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { EmptyState, ErrorState, Loading, PageHeader, Stat } from '@/components/query-state'
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input, Select } from '@/components/ui/input'
 import { Field } from '@/components/ui/label'
-import { api, getErrorMessage, type WalletData, type WalletEntry, type Withdrawal } from '@/lib/api'
+import { api, getErrorMessage, type MentorAccount, type WalletData, type WalletEntry, type Withdrawal } from '@/lib/api'
 import { cn, formatCurrency, formatDate } from '@/lib/utils'
 
 const entryMeta: Record<WalletEntry['type'], { label: string; icon: typeof Receipt; tone: string }> = {
@@ -38,13 +39,19 @@ export function WalletPage({ scope }: { scope: 'me' | 'platform' }) {
     queryFn: async () => (await api.get<WalletData>('/wallet', { params: { scope } })).data,
   })
 
+  // O mentor saca para a chave cadastrada ao abrir a carteira (D13). O admin informa a chave do Hub+.
+  const account = useQuery({
+    queryKey: ['mentor-account'],
+    enabled: scope === 'me',
+    queryFn: async () => (await api.get<MentorAccount>('/me/mentor-account')).data,
+  })
+
   const withdraw = useMutation({
     mutationFn: () =>
       api.post('/wallet/withdrawals', {
         scope,
         amountInCents: Math.round(Number(amount.replace(',', '.')) * 100),
-        pixKey,
-        pixKeyType,
+        ...(scope === 'platform' ? { pixKey, pixKeyType } : {}),
       }),
     onSuccess: () => {
       toast.success('Saque solicitado. Você será avisado quando o Pix for enviado.')
@@ -142,6 +149,8 @@ export function WalletPage({ scope }: { scope: 'me' | 'platform' }) {
                 <Field label="Valor (R$)" htmlFor="amount" hint={`Mínimo de ${formatCurrency(data.minimumWithdrawalInCents)}`}>
                   <Input id="amount" inputMode="decimal" required placeholder="0,00" value={amount} onChange={(e) => setAmount(e.target.value)} />
                 </Field>
+                {isPlatform ? (
+                  <>
                 <Field label="Tipo da chave" htmlFor="pixKeyType">
                   <Select id="pixKeyType" value={pixKeyType} onChange={(e) => setPixKeyType(e.target.value)}>
                     <option value="cpf">CPF</option>
@@ -154,10 +163,22 @@ export function WalletPage({ scope }: { scope: 'me' | 'platform' }) {
                 <Field label="Chave Pix" htmlFor="pixKey">
                   <Input id="pixKey" required minLength={3} value={pixKey} onChange={(e) => setPixKey(e.target.value)} />
                 </Field>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-faint p-3">
+                    <div className="min-w-0 leading-tight">
+                      <p className="text-xs text-muted-foreground">Chave Pix cadastrada</p>
+                      <p className="truncate text-[13px] font-semibold">{account.data ? `${account.data.pixKeyType.toUpperCase()} ${account.data.pixKeyMasked}` : '…'}</p>
+                    </div>
+                    <Link to="/settings?tab=wallet" className="text-xs font-semibold text-primary hover:underline">
+                      Trocar
+                    </Link>
+                  </div>
+                )}
                 <Button type="submit" className="w-full" loading={withdraw.isPending} disabled={!canWithdraw}>
                   Solicitar saque
                 </Button>
-                <p className="text-xs text-muted-foreground">O Hub+ faz o Pix e marca o saque como pago. Você acompanha o status aqui.</p>
+                <p className="text-xs text-muted-foreground">O Hub+ faz o Pix na chave cadastrada e marca o saque como pago. Você acompanha o status aqui.</p>
               </form>
             </CardContent>
           </Card>

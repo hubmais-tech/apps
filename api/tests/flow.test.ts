@@ -8,33 +8,7 @@ import { database, sql as pg } from '@/database/connection'
 import { ledgerEntries, users } from '@/database/schema'
 import { hashPassword } from '@/utils/password'
 
-const app = buildApp()
-const run = randomUUID().slice(0, 8)
-const password = 'senha-forte-123'
-
-type Session = { token: string; id: string }
-
-async function register(role: 'student' | 'mentor' | 'company', label: string): Promise<Session> {
-  const response = await app.inject({
-    method: 'POST',
-    url: '/auth/register',
-    payload: { name: `${label} ${run}`, email: `${label}-${run}@teste.local`, password, role },
-  })
-  expect(response.statusCode).toBe(201)
-  const body = response.json()
-  return { token: body.token, id: body.user.id }
-}
-
-const auth = (session: Session) => ({ authorization: `Bearer ${session.token}` })
-
-async function call(
-  session: Session | null,
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
-  url: string,
-  payload?: object,
-) {
-  return app.inject({ method, url, payload, headers: session ? auth(session) : undefined })
-}
+import { app, call, openWallet, password, register, run, type Session } from './helpers'
 
 describe('fluxo do MVP', () => {
   let mentor: Session
@@ -51,6 +25,8 @@ describe('fluxo do MVP', () => {
     await app.ready()
     mentor = await register('mentor', 'mentor')
     otherMentor = await register('mentor', 'mentor2')
+    expect((await openWallet(mentor)).statusCode).toBe(201)
+    expect((await openWallet(otherMentor)).statusCode).toBe(201)
     student = await register('student', 'aluno')
     company = await register('company', 'empresa')
 
@@ -130,12 +106,20 @@ describe('fluxo do MVP', () => {
     const bad = await call(mentor, 'POST', `/courses/${courseId}/uploads`, {
       kind: 'video',
       contentType: 'application/pdf',
+      size: 1000,
     })
     expect(bad.statusCode).toBe(400)
+
+    // Tamanho fora do limite (D15): capa até 5 MB, vídeo até 2 GB, nunca vazio.
+    const huge = await call(mentor, 'POST', `/courses/${courseId}/uploads`, { kind: 'cover', contentType: 'image/png', size: 6 * 1024 * 1024 })
+    expect(huge.statusCode).toBe(400)
+    const empty = await call(mentor, 'POST', `/courses/${courseId}/uploads`, { kind: 'video', contentType: 'video/mp4', size: 0 })
+    expect(empty.statusCode).toBe(400)
 
     const upload = await call(mentor, 'POST', `/courses/${courseId}/uploads`, {
       kind: 'video',
       contentType: 'video/mp4',
+      size: 50 * 1024 * 1024,
     })
     expect(upload.statusCode).toBe(200)
     const { key, uploadUrl } = upload.json()
@@ -220,7 +204,7 @@ describe('fluxo do MVP', () => {
   })
 
   it('progresso da aula é registrado', async () => {
-    expect((await call(student, 'POST', `/lessons/${lessonId}/complete`)).statusCode).toBe(204)
+    expect((await call(student, 'POST', `/lessons/${lessonId}/complete`)).statusCode).toBe(200)
     const learn = (await call(student, 'GET', `/courses/${slug}/learn`)).json()
     expect(learn.modules[0].lessons[0].completed).toBe(true)
 

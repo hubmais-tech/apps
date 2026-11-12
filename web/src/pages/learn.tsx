@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, ChevronDown, ChevronLeft, ChevronRight, Lock, Play } from 'lucide-react'
+import { Award, Check, ChevronDown, ChevronLeft, ChevronRight, Lock, Play, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { ErrorState, Loading } from '@/components/query-state'
@@ -9,10 +9,14 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { api, getErrorMessage } from '@/lib/api'
+import { ChallengesPanel, type LearnChallenge } from '@/pages/student/challenges-panel'
 import { cn, formatDuration } from '@/lib/utils'
 
 type LearnData = {
   course: { id: string; title: string; slug: string }
+  completion: { totalLessons: number; completedLessons: number; totalChallenges: number; approvedChallenges: number; complete: boolean }
+  certificateCode: string | null
+  challenges: LearnChallenge[]
   modules: {
     id: string
     title: string
@@ -24,7 +28,9 @@ export function LearnPage() {
   const { slug } = useParams()
   const [params] = useSearchParams()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [currentId, setCurrentId] = useState<string | null>(null)
+  const [tab, setTab] = useState<'overview' | 'challenges'>(params.get('tab') === 'desafios' ? 'challenges' : 'overview')
 
   const learn = useQuery({
     queryKey: ['learn', slug],
@@ -50,11 +56,18 @@ export function LearnPage() {
   })
 
   const complete = useMutation({
-    mutationFn: (lessonId: string) => api.post(`/lessons/${lessonId}/complete`),
-    onSuccess: () => {
+    mutationFn: async (lessonId: string) => (await api.post<{ certificateCode: string | null }>(`/lessons/${lessonId}/complete`)).data,
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['learn', slug] })
       queryClient.invalidateQueries({ queryKey: ['enrollments'] })
-      toast.success('Aula concluída!')
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['certificates'] })
+      if (data.certificateCode && !learn.data?.certificateCode) {
+        const code = data.certificateCode
+        toast.success('Parabéns! Você concluiu o curso e ganhou o certificado.', { action: { label: 'Ver certificado', onClick: () => navigate(`/certificado/${code}`) } })
+      } else {
+        toast.success('Aula concluída!')
+      }
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   })
@@ -81,6 +94,8 @@ export function LearnPage() {
   const previous = index > 0 ? playable[index - 1] : undefined
   const next = index >= 0 ? playable[index + 1] : undefined
   const currentModule = learn.data.modules.find((m) => m.lessons.some((l) => l.id === current?.id))
+  const completion = learn.data.completion
+  const missingChallenges = completion.totalChallenges - completion.approvedChallenges
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
@@ -133,6 +148,95 @@ export function LearnPage() {
             </Button>
           </div>
         )}
+
+        {learn.data.completion.complete && learn.data.certificateCode && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-success bg-mint-soft p-4">
+            <div className="flex items-center gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-success text-white">
+                <Award className="size-5" />
+              </span>
+              <div className="leading-tight">
+                <p className="font-bold">Curso concluído!</p>
+                <p className="text-[13px] text-muted-foreground">Seu certificado está pronto. Código {learn.data.certificateCode}.</p>
+              </div>
+            </div>
+            <Button asChild>
+              <Link to={`/certificado/${learn.data.certificateCode}`}>Ver certificado</Link>
+            </Button>
+          </div>
+        )}
+
+        <section aria-label="Detalhes da aula" className="rounded-xl border border-border bg-card">
+          <div role="tablist" aria-label="Abas da aula" className="flex gap-1 border-b border-border px-3">
+            {(
+              [
+                { id: 'overview', label: 'Visão geral', count: 0 },
+                { id: 'challenges', label: 'Desafios', count: learn.data.challenges.length },
+              ] as const
+            ).map((item) => (
+              <button
+                key={item.id}
+                id={`tab-${item.id}`}
+                role="tab"
+                aria-selected={tab === item.id}
+                aria-controls={`panel-${item.id}`}
+                onClick={() => setTab(item.id)}
+                className={cn('-mb-px inline-flex items-center gap-1.5 border-b-2 border-transparent px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground', tab === item.id && 'border-primary font-semibold text-primary')}
+              >
+                {item.label}
+                {item.count > 0 && <span className="rounded-full bg-muted px-1.5 text-[11px] tabular">{item.count}</span>}
+              </button>
+            ))}
+          </div>
+
+          <div id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" hidden={tab !== 'overview'} className="space-y-4 p-4 sm:p-5">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2 rounded-lg border border-border bg-faint p-3.5">
+                <p className="flex items-center justify-between text-[13px] font-semibold">
+                  Aulas <span className="text-xs font-medium text-muted-foreground tabular">{completion.completedLessons} de {completion.totalLessons}</span>
+                </p>
+                <Progress value={completion.totalLessons ? (completion.completedLessons / completion.totalLessons) * 100 : 0} />
+              </div>
+              <div className="space-y-2 rounded-lg border border-border bg-faint p-3.5">
+                <p className="flex items-center justify-between text-[13px] font-semibold">
+                  Desafios aprovados <span className="text-xs font-medium text-muted-foreground tabular">{completion.approvedChallenges} de {completion.totalChallenges}</span>
+                </p>
+                <Progress tone="primary" value={completion.totalChallenges ? (completion.approvedChallenges / completion.totalChallenges) * 100 : 0} />
+              </div>
+            </div>
+            {missingChallenges > 0 && completion.completedLessons >= completion.totalLessons && completion.totalLessons > 0 && (
+              <p className="flex items-start gap-2 rounded-lg bg-sand-soft p-3 text-[13px] text-warning">
+                <Trophy className="mt-0.5 size-4 shrink-0" />
+                <span>
+                  Você terminou as aulas. Falta aprovar {missingChallenges} {missingChallenges === 1 ? 'desafio' : 'desafios'} para receber o certificado.{' '}
+                  <button type="button" className="font-semibold underline" onClick={() => setTab('challenges')}>
+                    Ir para os desafios
+                  </button>
+                </span>
+              </p>
+            )}
+            {currentModule && current && (
+              <dl className="grid gap-2 text-[13px] sm:grid-cols-3">
+                <div>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase">Módulo</dt>
+                  <dd>{currentModule.title}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase">Duração</dt>
+                  <dd className="tabular">{formatDuration(current.durationInSeconds)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold text-muted-foreground uppercase">Situação</dt>
+                  <dd>{current.completed ? 'Concluída' : 'Em andamento'}</dd>
+                </div>
+              </dl>
+            )}
+          </div>
+
+          <div id="panel-challenges" role="tabpanel" aria-labelledby="tab-challenges" hidden={tab !== 'challenges'} className="p-4 sm:p-5">
+            <ChallengesPanel challenges={learn.data.challenges} onChanged={() => queryClient.invalidateQueries({ queryKey: ['learn', slug] })} />
+          </div>
+        </section>
       </div>
 
       <aside className="xl:sticky xl:top-20 xl:self-start">

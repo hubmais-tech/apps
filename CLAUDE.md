@@ -4,7 +4,12 @@ Plataforma digital de formação e conexão profissional para jovens de 18 a 26 
 
 ## Estado atual
 
-MVP (fases 1 a 4 do plano) em construção. O plano está em `docs/PLAN.md` e as decisões em `docs/DECISIONS.md`. Código em `api/` e `web/`.
+Fases 1 a 6 do plano e o onboarding por perfil estão implementados e testados. Falta a fase 2 (planos corporativos, doações, taxa de contratação, e-mail transacional, etc.), que depende de decisões pendentes (A8 a A13). Documentação em `docs/`:
+
+- `PLAN.md`: plano e situação das fases. `DECISIONS.md`: decisões (D1 a D22) e pendências (A6 a A14).
+- `FLOWS.md`: fluxo de cada perfil. `API.md`: rotas. `DATA-MODEL.md`: tabelas.
+
+**Ao mudar comportamento, rota ou tabela, atualize o documento correspondente na mesma tarefa.** Decisão nova vai em `DECISIONS.md`; o que ficar em aberto vira item "A" ali.
 
 ## Modelo de negócio (resumo)
 
@@ -36,6 +41,12 @@ MVP (fases 1 a 4 do plano) em construção. O plano está em `docs/PLAN.md` e as
 - **Carteira estilo Kiwify:** saldo calculado a partir de um ledger imutável (`ledger_entries`), com saldo pendente e disponível, e saque por Pix. A carteira do Hub+ segue o mesmo modelo no perfil admin. O admin vê as retenções do Hub+ como o mentor vê os dele. Janela de garantia de 7 dias (`WALLET_HOLD_DAYS`).
 - Movimentações financeiras sempre dentro de transação do banco.
 - Toda autorização passa por CASL. Nenhuma rota checa o perfil na mão.
+
+- **Onboarding por perfil (D12):** aluno opcional e sem CPF; mentor e empresa obrigatórios. A trava é da API: `AuthUser` carrega `walletOpened` (mentor) e `companyId` (empresa), e o CASL só concede criar curso, carteira, saque e Banco de Talentos com isso. Nunca confie só no redirecionamento do front-end.
+- **CPF só no mentor** (`mentor_accounts`, D13). Respostas da API devolvem CPF e Pix mascarados. Só o admin que paga o saque vê o CPF completo.
+- **Empresa só vê primeiro nome e inicial** do aluno até ele aceitar o convite (D18).
+- **Certificado** só quando todas as aulas estão concluídas e todos os desafios aprovados (D16). Quem emite é `issueCertificateIfComplete` (`api/src/services/certificates.ts`).
+- **Uploads** vão direto ao R2 por URL pré-assinada, com tipo e tamanho validados na API (D15).
 
 ## Design
 
@@ -76,13 +87,23 @@ pnpm dev
 - `PAYMENT_GATEWAY=fake` (padrão em desenvolvimento) simula o pagamento por uma tela local. Proibido em produção (a API não sobe).
 - Para o Stripe real: `PAYMENT_GATEWAY=stripe`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, e apontar o webhook para `POST /webhooks/stripe` (eventos: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`).
 - O upload de capa e vídeo vai direto do navegador ao R2. O bucket precisa de CORS liberando `PUT` e `GET` para a origem do front-end.
-- `PLATFORM_FEE_PERCENT` (padrão 20) é uma **suposição**: a retenção real do Hub+ ainda não foi definida.
+- `PLATFORM_FEE_PERCENT` (padrão 20) é uma **suposição**: a retenção real do Hub+ ainda não foi definida. `GATEWAY_FEE_PERCENT` e `GATEWAY_FEE_FIXED_IN_CENTS` estimam a taxa do Stripe, descontada do mentor (D22, A14).
 
 ## Estrutura
 
-- `api/src/auth`: CASL (perfis e permissões). `api/src/services`: `payment-gateway` (interface + Stripe + fake), `wallet` (ledger, saques), `orders` (pagamento, reembolso), `storage` (R2).
-- `api/src/http/routes`: auth, courses, learning, checkout (+webhook), wallet.
-- `web/src/pages`: telas. `web/src/components/ui`: componentes no estilo shadcn. `web/src/index.css`: tokens do design system.
+- `api/src/auth`: CASL (perfis e permissões). `api/src/http/routes`: auth, profile, company, courses, learning, challenges, portfolio, talents, dashboard, checkout (+ webhook), wallet. `api/src/services`: `payment-gateway`, `wallet` (ledger e saques), `orders`, `storage` (R2), `certificates`, `access`, `onboarding`. `api/src/utils`: senha, slug, documentos (CPF, CNPJ, Pix).
+- `api/tests`: `flow` (MVP), `onboarding`, `course-builder`, `engagement` (desafios, certificado, portfólio, talentos), `dashboard`. Os testes rodam contra o Postgres local (`pnpm test`).
+- `web/src/pages`: telas por área (`onboarding`, `mentor`, `student`, `company`, `admin`). `web/src/components/ui`: componentes no estilo shadcn. `web/src/components`: `layout` (shell por perfil), `dropzone`, `onboarding-shell`, `week-bars`. `web/src/index.css`: tokens do design system.
+
+## Armadilhas conhecidas
+
+- Alguns arquivos de teste usam fim de linha CRLF. Edições com várias linhas por script falham sem avisar: use a ferramenta de edição e confira o resultado.
+- Heredoc grande no bash do Windows quebra: crie arquivos com a ferramenta de escrita.
+- O servidor da API não recarrega sozinho com `tsx` sem `watch`. `pnpm dev` usa `watch`.
+
+- Os testes (`vitest.config.ts`) forçam `PAYMENT_GATEWAY=fake` e valores fixos de taxa, para nunca falarem com o Stripe de verdade nem dependerem do `.env`.
+- No Windows, rode o Vite a partir de um caminho com a letra do drive em maiúscula (`C:/...`). Com `c:/...` o Vite carrega o mesmo arquivo por dois caminhos e o React falha com "useAuth precisa estar dentro de AuthProvider".
+- `signIn` precisa **buscar** a sessão (`fetchQuery`), não só invalidar: o hook de sessão está desligado até existir token, e invalidar uma consulta desligada não busca nada.
 
 ## Ferramentas instaladas
 

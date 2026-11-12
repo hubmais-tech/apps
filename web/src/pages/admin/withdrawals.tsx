@@ -7,9 +7,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { api, getErrorMessage, type Withdrawal } from '@/lib/api'
+import { maskCpf, maskPhone } from '@/lib/masks'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
-type AdminWithdrawal = Withdrawal & { ownerName: string }
+type AdminWithdrawal = Withdrawal & { ownerName: string; ownerFullName: string | null; ownerCpf: string | null; ownerPhone: string | null }
 
 export function AdminWithdrawalsPage() {
   const queryClient = useQueryClient()
@@ -40,11 +41,17 @@ export function AdminWithdrawalsPage() {
           <Card key={item.id} className="flex flex-wrap items-center justify-between gap-4 p-4">
             <div className="space-y-1 text-sm">
               <p className="font-semibold">
-                {item.ownerName} · {formatCurrency(item.amountInCents)}
+                {item.ownerFullName ?? item.ownerName} · {formatCurrency(item.amountInCents)}
               </p>
               <p className="text-muted-foreground">
                 Pix ({item.pixKeyType}): <span className="select-all font-mono text-foreground">{item.pixKey}</span>
               </p>
+              {item.ownerCpf && (
+                <p className="text-muted-foreground">
+                  CPF <span className="select-all font-mono text-foreground">{maskCpf(item.ownerCpf)}</span>
+                  {item.ownerPhone && <> · Tel. <span className="select-all text-foreground">{maskPhone(item.ownerPhone)}</span></>}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">Solicitado em {formatDate(item.requestedAt)}</p>
             </div>
             {item.status === 'requested' ? (

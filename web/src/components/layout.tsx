@@ -1,10 +1,10 @@
-import { BookOpen, Compass, GraduationCap, Home, LogOut, Moon, Receipt, Search, ShoppingBag, Sun, Wallet } from 'lucide-react'
+import { Award, BookOpen, Briefcase, Building2, ClipboardCheck, Compass, FolderKanban, Mail, Send, GraduationCap, Home, LogOut, Moon, Receipt, Search, Settings, ShoppingBag, Sun, Users, Wallet } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import type { Role } from '@/lib/api'
+import type { Onboarding, Role } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { useTheme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
@@ -23,22 +23,41 @@ const home: NavEntry = { to: '/', label: 'Início', icon: Home, end: true }
 const explore: NavEntry = { to: '/explore', label: 'Explorar cursos', icon: Compass }
 const learning: NavEntry = { to: '/my-learning', label: 'Meus estudos', icon: GraduationCap }
 
-function navFor(role: Role): NavGroup[] {
+const settings: NavEntry = { to: '/settings', label: 'Configurações', icon: Settings }
+
+function navFor(role: Role, onboarding: Onboarding | null): NavGroup[] {
+  const pending = Boolean(onboarding?.required && !onboarding.completed)
+
   if (role === 'mentor') {
+    if (pending) {
+      return [{ title: 'Primeiros passos', items: [{ to: '/onboarding', label: 'Abrir carteira', icon: Wallet }, explore] }]
+    }
     return [
       { title: 'Menu', items: [home, explore, learning] },
       {
         title: 'Mentoria',
         items: [
           { to: '/mentor/courses', label: 'Meus cursos', icon: BookOpen },
+          { to: '/mentor/reviews', label: 'Correções', icon: ClipboardCheck },
           { to: '/mentor/wallet', label: 'Carteira', icon: Wallet },
         ],
       },
+      { title: 'Conta', items: [settings] },
+    ]
+  }
+  if (role === 'company') {
+    if (pending) {
+      return [{ title: 'Primeiros passos', items: [{ to: '/onboarding', label: 'Cadastrar empresa', icon: Building2 }, explore] }]
+    }
+    return [
+      { title: 'Menu', items: [home, { to: '/talents', label: 'Banco de Talentos', icon: Briefcase }, { to: '/company/invitations', label: 'Convites enviados', icon: Send }, explore] },
+      { title: 'Empresa', items: [{ to: '/settings?tab=team', label: 'Equipe', icon: Users }] },
+      { title: 'Conta', items: [settings] },
     ]
   }
   if (role === 'admin') {
     return [
-      { title: 'Menu', items: [explore] },
+      { title: 'Menu', items: [{ to: '/admin', label: 'Visão geral', icon: Home, end: true }, explore] },
       {
         title: 'Administração',
         items: [
@@ -49,7 +68,18 @@ function navFor(role: Role): NavGroup[] {
       },
     ]
   }
-  return [{ title: 'Menu', items: [home, explore, learning] }]
+  return [
+    { title: 'Menu', items: [home, explore, learning] },
+    {
+      title: 'Carreira',
+      items: [
+        { to: '/portfolio', label: 'Portfólio', icon: FolderKanban },
+        { to: '/certificates', label: 'Certificados', icon: Award },
+        { to: '/invitations', label: 'Convites', icon: Mail },
+      ],
+    },
+    { title: 'Conta', items: [settings] },
+  ]
 }
 
 function initials(name: string) {
@@ -153,9 +183,9 @@ function PublicLayout() {
 }
 
 function AppLayout() {
-  const { user, signOut } = useAuth()
+  const { user, onboarding, signOut } = useAuth()
   if (!user) return null
-  const groups = navFor(user.role)
+  const groups = navFor(user.role, onboarding)
   const tabs = groups.flatMap((g) => g.items).slice(0, 5)
 
   return (

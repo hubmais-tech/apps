@@ -110,6 +110,116 @@ Vídeos ficam num bucket do Cloudflare R2, com upload por URL pré-assinada e le
 
 MVP são as fases 1 a 4 do `PLAN.md`: estrutura e design system, auth com perfis e CASL, cursos com upload no R2 e catálogo, compra com Stripe, carteira e matrícula.
 
+## D12. Cadastro e onboarding por perfil (Decidido, 2026-11-10)
+
+O cadastro deixa de ser igual para todos. A conta nasce com nome, e-mail, senha e perfil, e cada perfil passa por um onboarding próprio logo depois:
+
+- **Aluno:** onboarding leve e **pulável**: data de nascimento, cidade e bairro, WhatsApp, interesses e objetivo. Nada disso bloqueia o uso. **Sem CPF** (mantém a correção ao `hubmais-tech/api`).
+- **Mentor:** onboarding **obrigatório**, chamado de **"abrir a carteira"** (D13).
+- **Empresa:** onboarding obrigatório com CNPJ e dados da empresa, e depois o cadastro de representantes (D14).
+
+O front-end redireciona para o onboarding enquanto ele não estiver completo. A trava real fica na API (CASL), não só na tela.
+
+## D13. Mentor precisa abrir a carteira antes de usar a plataforma (Decidido, 2026-11-10)
+
+Enquanto o mentor não abrir a carteira, ele **não cria cursos, não vê a carteira e não pede saque**. Para abrir, informa:
+
+- Dados pessoais: nome completo, **CPF**, data de nascimento e telefone.
+- Recebimento: tipo e chave Pix.
+- Perfil de mentor: mini bio e áreas de atuação.
+- Aceite dos termos de mentoria e de repasse (janela de garantia de 7 dias, retenção do Hub+).
+
+Regras:
+
+- O CPF é validado pelos dígitos verificadores, guardado só com números, único por conta e exibido mascarado (`***.456.789-**`). O CPF **só existe no mentor**, porque é necessário para pagar Pix.
+- A carteira é "aberta" quando existe a conta do mentor (`mentor_accounts`). A permissão do CASL para criar curso, ver a carteira e sacar depende disso.
+- O saque usa a chave Pix cadastrada na conta, sem digitar a chave a cada pedido. O mentor pode trocar a chave nas configurações.
+- A chave Pix e o CPF aparecem completos só para o admin que paga o saque.
+
+## D14. Empresa: CNPJ e representantes (Decidido, 2026-11-10)
+
+- O cadastro da empresa pede **CNPJ** (validado pelos dígitos verificadores; sem consulta à Receita no MVP), razão social, nome fantasia, setor, porte, cidade e site opcional.
+- Quem cadastra vira o **representante principal** (nome, cargo, telefone).
+- Dentro da plataforma, a empresa cadastra **outros representantes**: nome, cargo, e-mail e telefone. Cada representante pode receber um **convite com link** para criar a própria senha e acessar a empresa.
+- Não há envio de e-mail ainda (ver A11): o link do convite é mostrado na tela para a empresa copiar.
+- Todos os representantes de uma empresa enxergam os mesmos dados da empresa. Só o principal remove representantes.
+- A empresa só acessa o Banco de Talentos com o cadastro completo.
+
+## D15. Uploads com dropzone (Decidido, 2026-11-10)
+
+Capas e vídeos usam um componente de **arrastar e soltar** com pré-visualização e barra de progresso, enviando direto ao R2 por URL pré-assinada (o binário não passa pela API). Limites:
+
+- Capa: JPG, PNG ou WebP, até 5 MB.
+- Vídeo de aula: MP4, WebM ou MOV, até 2 GB.
+- Arquivo de entrega de desafio: imagem, PDF ou ZIP, até 25 MB.
+
+A validação de tipo e tamanho acontece no navegador e de novo na API ao gerar a URL.
+
+## D16. Desafios, entregas e certificado (Decidido, 2026-11-10)
+
+- Um **desafio** pertence a um curso e é criado pelo mentor, com enunciado e critérios.
+- O aluno matriculado faz a **entrega** com texto, links e arquivos. O mentor **aprova** ou **pede ajustes**, com feedback escrito. O aluno pode reenviar.
+- O **certificado** é emitido automaticamente quando o aluno conclui todas as aulas **e** tem todos os desafios do curso aprovados. Tem código de verificação e uma página pública de validação.
+- O certificado é uma página HTML com estilo de impressão. Não há geração de PDF no servidor.
+
+## D17. Portfólio (Decidido, 2026-11-10)
+
+- Uma entrega aprovada pode virar **item de portfólio**, por escolha do aluno. O item fica **validado** pelo mentor que aprovou.
+- O aluno também pode adicionar projetos próprios (título, descrição, links, imagem), que aparecem como **não validados**.
+- Só itens validados contam para o Banco de Talentos.
+
+## D18. Banco de Talentos (Decidido, 2026-11-10)
+
+- O aluno decide aparecer. Para ficar visível precisa de **pelo menos 1 projeto validado**.
+- Empresas com cadastro completo buscam por texto, área, cidade e bairro, e abrem o perfil do talento. Antes do aceite, a empresa vê **só o primeiro nome e a inicial do sobrenome** (jovens de 18 a 26 anos: privacidade por padrão).
+- A empresa envia um **convite para vaga** (título e mensagem). O aluno aceita ou recusa. **Contato direto (e-mail e WhatsApp) só é revelado após o aceite.**
+- Planos e selos das empresas (limite de perfis por mês) **não são aplicados** por enquanto (A10 pendente). Tudo fica liberado para empresas com cadastro completo.
+- A taxa de intermediação sobre contratações **não é cobrada** por enquanto (A12 pendente). A empresa pode marcar o convite como "contratado", para alimentar o relatório de impacto.
+
+## D19. Painel do aluno com dados reais (Decidido, 2026-11-10)
+
+O painel usa só números que o sistema tem de verdade:
+
+- **Horas de estudo:** estimativa pela soma da duração das aulas concluídas (a plataforma não mede o tempo assistido).
+- **Sequência:** dias seguidos com pelo menos uma aula concluída.
+- **Atividade da semana:** aulas concluídas por dia, nos últimos 7 dias.
+- Além disso: continuar estudando, desafios pendentes e devolutivas, certificados, convites de empresas e o caminho até o Banco de Talentos.
+
+## D20. Construtor de cursos guiado (Decidido, 2026-11-10)
+
+O formulário único de edição foi trocado por um construtor em **cinco etapas navegáveis em qualquer ordem**: Informações, Capa, Conteúdo, Desafios e Publicar. Regras:
+
+- O curso nasce como rascunho com título e preço. O resto é completado no construtor.
+- **Vídeos por arrastar e soltar:** vários arquivos de uma vez, cada um vira uma aula (título sugerido pelo nome do arquivo, duração lida do vídeo). Até 2 envios simultâneos.
+- **Reordenar** módulos e aulas por arrastar ou pelas setas (acessível pelo teclado), inclusive mover aula entre módulos. A API recebe a ordem inteira e recusa listas que não batem com o curso.
+- **Remover** pede confirmação em dois cliques, sem diálogo do navegador.
+- **Checklist para publicar.** Obrigatórios: título e preço, ao menos uma aula com vídeo. Recomendados (não bloqueiam): descrição de 40 caracteres ou mais, capa, ao menos um desafio, todas as aulas com vídeo. O desafio é recomendado porque sem ele o aluno não consegue um projeto validado para o portfólio e o Banco de Talentos.
+
+## D21. Dados mostrados nos painéis (Decidido, 2026-11-10)
+
+Complementa a D19. Todos os painéis usam só números que o sistema tem:
+
+- **Mentor:** vendas do mês (já descontada a retenção), saldo disponível e pendente, alunos, entregas para corrigir, vendas da semana, cursos com mais alunos.
+- **Empresa:** talentos disponíveis e convites por estado.
+- **Admin:** usuários por perfil, cursos publicados, receita bruta, retenção do Hub+, pedidos pagos, saques a pagar, certificados, convites e contratações.
+- Os dias dos gráficos e da sequência de estudo usam o fuso de Aracaju (UTC-3).
+
+## D22. Transparência de ganhos do mentor e taxa do gateway (Decidido, 2026-11-12)
+
+Ao definir o preço de um curso, o mentor vê quanto fica com ele, com as três partes do valor pago:
+
+- **Retenção do Hub+:** percentual do valor pago (`PLATFORM_FEE_PERCENT`).
+- **Taxa do meio de pagamento:** estimada por percentual mais valor fixo (`GATEWAY_FEE_PERCENT` e `GATEWAY_FEE_FIXED_IN_CENTS`; padrão 3,99% + R$ 0,39, cartão no Stripe Brasil). **É descontada do mentor.**
+- **Mentor:** o que sobra. A soma das três partes é sempre o valor pago, sem sobra de centavo.
+
+Regras:
+
+- A prévia vem de `GET /pricing/preview`, que usa a **mesma função** que grava o pedido (`splitAmount`). O valor exibido é o que cai na carteira.
+- A taxa estimada é gravada no pedido (`orders.gateway_fee_in_cents`). Mudar a configuração depois **não altera pedidos antigos**.
+- A taxa real do Stripe fica debitada na conta do Hub+, não no extrato interno. Se a taxa real for diferente da estimada, a diferença é do Hub+. A reconciliação com a taxa real (balance transaction do Stripe) não está implementada.
+- Em reembolso, o mentor e o Hub+ são estornados pelos valores originais. O Stripe **não devolve** a taxa dele, então esse custo fica com o Hub+.
+- Os testes automáticos usam gateway `fake` e valores fixos (retenção 20%, taxa de gateway zerada), independentemente do `.env`. Os testes de taxa ajustam os valores por conta própria.
+
 ## Decisões abertas
 
 | ID | Pergunta | Situação |
@@ -118,3 +228,7 @@ MVP são as fases 1 a 4 do `PLAN.md`: estrutura e design system, auth com perfis
 | A8 | Como a doação de empresas é recebida (página pública, Pix manual, boleto) | **Pendente**: será discutido com as sócias. Fase 2 |
 | A9 | Pix no Stripe Brasil e disponibilidade do Stripe Connect para saque automático | Validar na conta Stripe do Hub+ |
 | A10 | Planos corporativos do Banco de Talentos: limites de perfis abertos por mês em cada plano (Essencial, Avançado, Premium), preços, o que cada selo (Bronze, Prata, Ouro) inclui e se convites têm limite | **Pendente**: o responsável vai analisar com calma. O protótipo usa 30 perfis no Essencial e 100 no Avançado só como exemplo visual, sem valor de decisão. Banco de Talentos é fase 6 |
+| A11 | Provedor de e-mail transacional (convites de representantes, recuperação de senha, avisos de saque e de devolutiva) | **Pendente**. Hoje o link do convite é mostrado na tela e não há recuperação de senha por e-mail |
+| A12 | Taxa de intermediação sobre contratação feita pela plataforma: percentual, base de cálculo e forma de cobrança | **Pendente**. Fase 6 registra a contratação, sem cobrar |
+| A13 | Verificação de identidade do mentor (CPF x nome) e regras antifraude para troca de chave Pix e saque | **Pendente**. Hoje só validamos os dígitos do CPF |
+| A14 | Quem arca com a taxa do Stripe (hoje: o mentor, por estimativa), valores reais da taxa (cartão e Pix) na conta do Hub+, e se a taxa real do Stripe deve substituir a estimativa em cada pedido | **Pendente**: confirmar com o responsável. Os valores padrão (3,99% + R$ 0,39) vêm de pesquisa e **não foram verificados** na conta do Stripe |

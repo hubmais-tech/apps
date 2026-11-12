@@ -26,6 +26,8 @@ export const orders = pgTable('orders', {
     .notNull(),
   amountInCents: integer().notNull(),
   platformFeeInCents: integer().notNull(),
+  /** Estimativa da taxa do gateway, descontada do mentor (D22). A taxa real fica na conta do Stripe do Hub+. */
+  gatewayFeeInCents: integer().default(0).notNull(),
   mentorAmountInCents: integer().notNull(),
   status: orderStatus().default('pending').notNull(),
   gatewayRef: text(),

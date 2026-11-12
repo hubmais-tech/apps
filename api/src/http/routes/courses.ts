@@ -9,14 +9,14 @@ import {
   buildObjectKey,
   createUploadUrl,
   isAllowedContentType,
+  isAllowedSize,
   publicUrl,
 } from '@/services/storage'
+import { MIN_PRICE_IN_CENTS } from '@/services/pricing'
 import { uniqueSlug } from '@/utils/slug'
 
 import { BadRequestError, ForbiddenError, NotFoundError } from '../errors/http-errors'
 
-// Mínimo aceito pelo Stripe em BRL é R$ 0,50. Usamos R$ 5,00 como piso de negócio.
-const MIN_PRICE_IN_CENTS = 500
 
 const idParam = z.object({ id: z.uuid() })
 
@@ -416,6 +416,66 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   )
 
+  app.patch(
+    '/modules/:id',
+    {
+      schema: {
+        params: idParam,
+        body: z.object({ title: z.string().trim().min(2) }),
+        response: { 204: z.null() },
+      },
+    },
+    async (request, reply) => {
+      const user = await request.requireUser()
+      const mod = await loadModule(request.params.id)
+      assertCan(user, 'update', await loadCourse(mod.courseId))
+
+      await database.update(modules).set({ title: request.body.title }).where(eq(modules.id, mod.id))
+      return reply.status(204).send(null)
+    },
+  )
+
+  // Reordena módulos e aulas de uma vez, inclusive movendo aula entre módulos.
+  app.put(
+    '/courses/:id/order',
+    {
+      schema: {
+        params: idParam,
+        body: z.object({
+          modules: z.array(z.object({ id: z.uuid(), lessonIds: z.array(z.uuid()) })).min(1),
+        }),
+        response: { 204: z.null() },
+      },
+    },
+    async (request, reply) => {
+      const user = await request.requireUser()
+      const course = await loadCourse(request.params.id)
+      assertCan(user, 'update', course)
+
+      const current = await loadStructure(course.id)
+      const knownModules = new Set(current.map((m) => m.id))
+      const knownLessons = new Set(current.flatMap((m) => m.lessons.map((l) => l.id)))
+      const sentModules = request.body.modules.map((m) => m.id)
+      const sentLessons = request.body.modules.flatMap((m) => m.lessonIds)
+
+      // A lista enviada precisa conter exatamente os módulos e aulas do curso, sem repetir nenhum.
+      const sameSet = (sent: string[], known: Set<string>) => sent.length === known.size && new Set(sent).size === sent.length && sent.every((id) => known.has(id))
+      if (!sameSet(sentModules, knownModules) || !sameSet(sentLessons, knownLessons)) {
+        throw new BadRequestError('A ordem enviada não corresponde ao conteúdo atual do curso. Recarregue a página.')
+      }
+
+      await database.transaction(async (tx) => {
+        for (const [moduleIndex, mod] of request.body.modules.entries()) {
+          await tx.update(modules).set({ position: moduleIndex + 1 }).where(eq(modules.id, mod.id))
+          for (const [lessonIndex, lessonId] of mod.lessonIds.entries()) {
+            await tx.update(lessons).set({ moduleId: mod.id, position: lessonIndex + 1 }).where(eq(lessons.id, lessonId))
+          }
+        }
+      })
+      return reply.status(204).send(null)
+    },
+  )
+
   app.delete(
     '/modules/:id',
     { schema: { params: idParam, response: { 204: z.null() } } },
@@ -513,7 +573,7 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
       config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
       schema: {
         params: idParam,
-        body: z.object({ kind: z.enum(['cover', 'video']), contentType: z.string() }),
+        body: z.object({ kind: z.enum(['cover', 'video']), contentType: z.string(), size: z.number().int().positive() }),
         response: { 200: z.object({ uploadUrl: z.string(), key: z.string() }) },
       },
     },
@@ -522,13 +582,16 @@ export const courseRoutes: FastifyPluginAsyncZod = async (app) => {
       const course = await loadCourse(request.params.id)
       assertCan(user, 'update', course)
 
-      const { kind, contentType } = request.body
+      const { kind, contentType, size } = request.body
       if (!isAllowedContentType(kind, contentType)) {
         throw new BadRequestError('Tipo de arquivo não permitido.')
       }
+      if (!isAllowedSize(kind, size)) {
+        throw new BadRequestError(kind === 'cover' ? 'A capa pode ter no máximo 5 MB.' : 'O vídeo pode ter no máximo 2 GB.')
+      }
 
       const key = buildObjectKey(kind, course.id, contentType)
-      return { uploadUrl: await createUploadUrl(key, contentType), key }
+      return { uploadUrl: await createUploadUrl(key, contentType, size), key }
     },
   )
 }

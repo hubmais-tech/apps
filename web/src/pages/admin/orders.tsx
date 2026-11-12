@@ -15,6 +15,7 @@ type Order = {
   buyerEmail: string
   amountInCents: number
   platformFeeInCents: number
+  gatewayFeeInCents: number
   mentorAmountInCents: number
   status: 'pending' | 'paid' | 'refunded' | 'failed'
   createdAt: string
@@ -60,7 +61,7 @@ export function AdminOrdersPage() {
                 {order.buyerEmail} · {formatDate(order.createdAt)}
               </p>
               <p className="text-xs text-muted-foreground">
-                Total {formatCurrency(order.amountInCents)} · Mentor {formatCurrency(order.mentorAmountInCents)} · Hub+ {formatCurrency(order.platformFeeInCents)}
+                Total {formatCurrency(order.amountInCents)} · Mentor {formatCurrency(order.mentorAmountInCents)} · Hub+ {formatCurrency(order.platformFeeInCents)} · Taxa do gateway {formatCurrency(order.gatewayFeeInCents)}
               </p>
             </div>
             <div className="flex items-center gap-3">
