@@ -2,7 +2,10 @@ import { randomUUID } from 'node:crypto'
 
 import { expect } from 'vitest'
 
+import { database } from '@/database/connection'
+import { users } from '@/database/schema'
 import { buildApp } from '@/http/app'
+import { hashPassword } from '@/utils/password'
 
 export const app = buildApp()
 export const run = randomUUID().slice(0, 8)
@@ -10,7 +13,7 @@ export const password = 'senha-forte-123'
 
 export type Session = { token: string; id: string }
 
-export async function register(role: 'student' | 'mentor' | 'company', label: string): Promise<Session> {
+export async function register(role: 'student' | 'mentor', label: string): Promise<Session> {
   const response = await app.inject({
     method: 'POST',
     url: '/auth/register',
@@ -94,4 +97,52 @@ export async function enroll(student: Session, courseId: string) {
   const checkout = await call(student, 'POST', `/courses/${courseId}/checkout`)
   expect(checkout.statusCode).toBe(200)
   expect((await call(student, 'POST', `/dev/orders/${checkout.json().orderId}/pay`)).statusCode).toBe(204)
+}
+
+/** Admin criado direto no banco (o seed só cria um, e os testes precisam de um por arquivo). */
+export async function createAdmin(label: string): Promise<Session> {
+  const email = `${label}-${run}@teste.local`
+  const [row] = await database.insert(users).values({ name: `Admin ${label}`, email, role: 'admin', passwordHash: await hashPassword(password) }).returning()
+  const login = await app.inject({ method: 'POST', url: '/auth/login', payload: { email, password } })
+  expect(login.statusCode).toBe(200)
+  return { token: login.json().token, id: row!.id }
+}
+
+export const companyFields = (overrides: Record<string, unknown> = {}) => ({
+  legalName: 'Studio Atalaia Comunicação LTDA',
+  tradeName: 'Studio Atalaia',
+  sector: 'Marketing e publicidade',
+  size: 'small',
+  city: 'Aracaju',
+  state: 'se',
+  ...overrides,
+})
+
+/**
+ * Empresa cadastrada pelo admin (D23). O responsável ativa o acesso pelo convite, como na plataforma.
+ * Devolve a sessão do responsável, o id da empresa e o CNPJ.
+ */
+export async function createCompany(admin: Session, label: string, overrides: Record<string, unknown> = {}) {
+  const cnpj = generateCnpj()
+  const email = `${label}-${run}@teste.local`
+  const created = await call(admin, 'POST', '/admin/companies', {
+    cnpj,
+    ...companyFields(overrides),
+    manager: { name: `Responsável ${label}`, jobTitle: 'Gerente de pessoas', email, phone: '79988887777' },
+  })
+  expect(created.statusCode).toBe(201)
+  const { companyId, memberId, inviteUrl } = created.json()
+  const token = inviteUrl.split('/convite/')[1] as string
+  const accepted = await call(null, 'POST', '/auth/accept-invite', { token, password })
+  expect(accepted.statusCode).toBe(201)
+  const session: Session = { token: accepted.json().token, id: accepted.json().user.id }
+  return { session, companyId: companyId as string, memberId: memberId as string, cnpj, email }
+}
+
+/** Conta de empresa sem empresa vinculada: só existe em contas antigas, anteriores à D23. */
+export async function createOrphanCompanyAccount(label: string): Promise<Session> {
+  const email = `${label}-${run}@teste.local`
+  const [row] = await database.insert(users).values({ name: `Empresa antiga ${label}`, email, role: 'company', passwordHash: await hashPassword(password) }).returning()
+  await app.ready()
+  return { token: app.jwt.sign({ sub: row!.id, role: 'company' }), id: row!.id }
 }

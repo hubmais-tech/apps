@@ -11,7 +11,7 @@ Empresas que financiam bolsas não têm acesso à plataforma. O processo é pare
 Consequências:
 - Perfis da plataforma: **student, mentor, company, admin**.
 - Doações são registradas pelo admin (ou por uma página pública de doação, a definir). Não há login de patrocinador.
-- Selos "Apoiador da Juventude" e relatórios de impacto de patrocinadores são emitidos pelo admin. Entram na fase 2.
+- Selos "Apoiador da Juventude" e relatórios de impacto de patrocinadores seriam emitidos pelo admin. **Ficam para o pós-MVP** (D24).
 - A tabela de doações é separada da de pedidos de curso (ver D3).
 
 ## D2. Perfis e permissões (Decidido, 2026-11-09)
@@ -20,8 +20,8 @@ Consequências:
 |---|---|
 | student | Comprar cursos, assistir, fazer desafios, manter portfólio, participar do Banco de Talentos |
 | mentor | Criar e publicar cursos, corrigir desafios, ver a carteira e sacar |
-| company | Buscar talentos, contratar, assinar plano corporativo |
-| admin | Curadoria, relatórios de impacto, doações e selos, ver a receita e a retenção do Hub+ |
+| company | Buscar talentos, contratar, assinar plano corporativo. A conta é cadastrada pelo Hub+ (D23) |
+| admin | Curadoria, cadastrar empresas (D23), doações, ver a receita e a retenção do Hub+. Relatórios de impacto e selos ficam para o pós-MVP (D24) |
 
 ## D3. Carteira estilo Kiwify, Ticto e Cakto (Decidido, 2026-11-09)
 
@@ -116,7 +116,7 @@ O cadastro deixa de ser igual para todos. A conta nasce com nome, e-mail, senha 
 
 - **Aluno:** onboarding leve e **pulável**: data de nascimento, cidade e bairro, WhatsApp, interesses e objetivo. Nada disso bloqueia o uso. **Sem CPF** (mantém a correção ao `hubmais-tech/api`).
 - **Mentor:** onboarding **obrigatório**, chamado de **"abrir a carteira"** (D13).
-- **Empresa:** onboarding obrigatório com CNPJ e dados da empresa, e depois o cadastro de representantes (D14).
+- **Empresa:** não há onboarding de cadastro: o Hub+ cadastra a empresa e a pessoa só ativa o acesso pelo convite (D23, que substituiu o onboarding com CNPJ da D14).
 
 O front-end redireciona para o onboarding enquanto ele não estiver completo. A trava real fica na API (CASL), não só na tela.
 
@@ -136,7 +136,9 @@ Regras:
 - O saque usa a chave Pix cadastrada na conta, sem digitar a chave a cada pedido. O mentor pode trocar a chave nas configurações.
 - A chave Pix e o CPF aparecem completos só para o admin que paga o saque.
 
-## D14. Empresa: CNPJ e representantes (Decidido, 2026-11-10)
+## D14. Empresa: CNPJ e representantes (Decidido, 2026-11-10; cadastro inicial substituído pela D23)
+
+> **Atenção:** o primeiro cadastro da empresa (quem preenche o CNPJ e vira representante principal) é feito pelo Hub+, conforme a D23. O restante desta decisão (representantes, convite com link, visibilidade dos dados) continua valendo. O "representante principal" passou a se chamar **responsável pela conta**.
 
 - O cadastro da empresa pede **CNPJ** (validado pelos dígitos verificadores; sem consulta à Receita no MVP), razão social, nome fantasia, setor, porte, cidade e site opcional.
 - Quem cadastra vira o **representante principal** (nome, cargo, telefone).
@@ -173,8 +175,8 @@ A validação de tipo e tamanho acontece no navegador e de novo na API ao gerar 
 - O aluno decide aparecer. Para ficar visível precisa de **pelo menos 1 projeto validado**.
 - Empresas com cadastro completo buscam por texto, área, cidade e bairro, e abrem o perfil do talento. Antes do aceite, a empresa vê **só o primeiro nome e a inicial do sobrenome** (jovens de 18 a 26 anos: privacidade por padrão).
 - A empresa envia um **convite para vaga** (título e mensagem). O aluno aceita ou recusa. **Contato direto (e-mail e WhatsApp) só é revelado após o aceite.**
-- Planos e selos das empresas (limite de perfis por mês) **não são aplicados** por enquanto (A10 pendente). Tudo fica liberado para empresas com cadastro completo.
-- A taxa de intermediação sobre contratações **não é cobrada** por enquanto (A12 pendente). A empresa pode marcar o convite como "contratado", para alimentar o relatório de impacto.
+- Planos das empresas (limite de perfis por mês) **não são aplicados** por enquanto (A10 pendente). Os selos ficam para o pós-MVP (D24). Tudo fica liberado para empresas com cadastro completo.
+- A taxa de intermediação sobre contratações **não é cobrada** por enquanto (A12 pendente). A empresa pode marcar o convite como "contratado", e esse dado fica guardado para o relatório de impacto, que é pós-MVP (D24).
 
 ## D19. Painel do aluno com dados reais (Decidido, 2026-11-10)
 
@@ -220,6 +222,39 @@ Regras:
 - Em reembolso, o mentor e o Hub+ são estornados pelos valores originais. O Stripe **não devolve** a taxa dele, então esse custo fica com o Hub+.
 - Os testes automáticos usam gateway `fake` e valores fixos (retenção 20%, taxa de gateway zerada), independentemente do `.env`. Os testes de taxa ajustam os valores por conta própria.
 
+## D23. Empresa tem cadastro único, feito pelo Hub+ (Decidido, 2026-11-12)
+
+- **A empresa não se cadastra sozinha.** O Hub+ (perfil admin) cadastra a empresa com o CNPJ. Há **um único cadastro por CNPJ**.
+- **A empresa escolhe quem gerencia a conta.** Ela indica ao Hub+ o responsável, e o Hub+ cadastra essa pessoa com um convite. Depois, o responsável pode passar a gestão a outro representante com acesso ativo (e o admin pode indicar outro responsável, a pedido da empresa, se o atual sair).
+- O responsável ativa o acesso pelo link de convite (D14), cria a senha e já entra na empresa. Confere os dados cadastrados, mas não refaz o cadastro.
+- O cadastro de empresa sai da tela pública de cadastro. A API deixa de aceitar `role: company` em `POST /auth/register`.
+- Os demais representantes, o convite com link e a visibilidade dos dados continuam como na D14.
+
+Situação do código: **implementado** (2026-11-12).
+
+- `POST /auth/register` só aceita `student` e `mentor`. A rota `POST /company` deixou de existir.
+- O admin cadastra a empresa e o responsável em `POST /admin/companies` (tela `/admin/companies/new`). O CNPJ é validado e único, e o e-mail do responsável não pode ter conta. O responsável recebe um convite de 7 dias. Como o e-mail transacional ainda não existe (A11), o link aparece na tela do admin para ele copiar e enviar.
+- O responsável ativa o acesso em `/convite/:token`, entra direto na empresa e vê um cartão para conferir os dados cadastrados. **Razão social e CNPJ só o Hub+ altera**; a empresa edita o resto.
+- **Só o responsável pela conta adiciona, remove e reenvia convites de representantes e passa a gestão.** Quem recebe a gestão precisa ter ativado o acesso. Há sempre exatamente um responsável, e o responsável atual não pode ser removido sem antes passar a gestão.
+- Se o responsável sai da empresa e não passa a gestão, o admin indica outro (`POST /admin/companies/:id/manager`) e **registra quem da empresa pediu e o motivo**. Toda troca fica em `company_manager_changes`.
+- O admin acompanha as empresas em `/admin/companies`, com o estado do acesso (ativo, convite pendente, convite vencido) e o reenvio do convite.
+- Conta de empresa sem empresa vinculada (só existe nas contas criadas antes da D23) **não consegue entrar**: o login responde 403 com a orientação de falar com o Hub+. Contas já vinculadas continuam como estavam.
+
+Pontos que **assumi** e precisam de confirmação (A15): o canal de contato por onde a empresa pede o cadastro (a tela só diz "fale com o Hub+", sem e-mail ou telefone), o que o Hub+ confere antes de cadastrar (hoje nada além da validação dos dígitos do CNPJ) e se desativar as contas antigas sem empresa é o desejado.
+
+## D24. Relatório de impacto e selos ficam para o pós-MVP (Decidido, 2026-11-12)
+
+O objetivo é entregar um **MVP funcional**. Ficam para uma versão posterior:
+
+- **Relatório de impacto** (painel e PDF do admin, relatório para doadores).
+- **Selos** das empresas (Bronze, Prata e Ouro, por plano) e dos doadores ("Apoiador da Juventude").
+
+Consequências:
+
+- No backlog, esses itens foram para o release "Pós-MVP" (épico E16), com prioridade P3.
+- O que já existe no código **não é removido**: o selo "Validado por mentor" do portfólio (D17) faz parte do Banco de Talentos e continua. A marcação "contratado" do convite (D18) continua guardando o dado para o relatório futuro.
+- Doações (A8), planos corporativos (A10) e taxa de contratação (A12) **seguem como estavam** (release R3 do backlog, decisões pendentes), apenas sem selo e sem relatório de impacto. Se essas também forem para o pós-MVP, é só dizer.
+
 ## Decisões abertas
 
 | ID | Pergunta | Situação |
@@ -227,8 +262,9 @@ Regras:
 | A6 | Logo em alta resolução ou vetorial | Usar o JPG atual. O responsável providencia uma versão melhor |
 | A8 | Como a doação de empresas é recebida (página pública, Pix manual, boleto) | **Pendente**: será discutido com as sócias. Fase 2 |
 | A9 | Pix no Stripe Brasil e disponibilidade do Stripe Connect para saque automático | Validar na conta Stripe do Hub+ |
-| A10 | Planos corporativos do Banco de Talentos: limites de perfis abertos por mês em cada plano (Essencial, Avançado, Premium), preços, o que cada selo (Bronze, Prata, Ouro) inclui e se convites têm limite | **Pendente**: o responsável vai analisar com calma. O protótipo usa 30 perfis no Essencial e 100 no Avançado só como exemplo visual, sem valor de decisão. Banco de Talentos é fase 6 |
+| A10 | Planos corporativos do Banco de Talentos: limites de perfis abertos por mês em cada plano (Essencial, Avançado, Premium), preços e se convites têm limite. Os selos (Bronze, Prata, Ouro) são pós-MVP (D24) | **Pendente**: o responsável vai analisar com calma. O protótipo usa 30 perfis no Essencial e 100 no Avançado só como exemplo visual, sem valor de decisão. Banco de Talentos é fase 6 |
 | A11 | Provedor de e-mail transacional (convites de representantes, recuperação de senha, avisos de saque e de devolutiva) | **Pendente**. Hoje o link do convite é mostrado na tela e não há recuperação de senha por e-mail |
 | A12 | Taxa de intermediação sobre contratação feita pela plataforma: percentual, base de cálculo e forma de cobrança | **Pendente**. Fase 6 registra a contratação, sem cobrar |
 | A13 | Verificação de identidade do mentor (CPF x nome) e regras antifraude para troca de chave Pix e saque | **Pendente**. Hoje só validamos os dígitos do CPF |
 | A14 | Quem arca com a taxa do Stripe (hoje: o mentor, por estimativa), valores reais da taxa (cartão e Pix) na conta do Hub+, e se a taxa real do Stripe deve substituir a estimativa em cada pedido | **Pendente**: confirmar com o responsável. Os valores padrão (3,99% + R$ 0,39) vêm de pesquisa e **não foram verificados** na conta do Stripe |
+| A15 | Pedido de cadastro de empresa (D23): canal de contato do Hub+ mostrado na tela de cadastro, o que o Hub+ confere antes de cadastrar (documentos, contrato) e o destino das contas antigas de empresa sem empresa vinculada | **Pendente**. Hoje a tela diz só "fale com o Hub+" e essas contas ficam sem acesso |

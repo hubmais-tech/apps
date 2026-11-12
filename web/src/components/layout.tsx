@@ -47,7 +47,7 @@ function navFor(role: Role, onboarding: Onboarding | null): NavGroup[] {
   }
   if (role === 'company') {
     if (pending) {
-      return [{ title: 'Primeiros passos', items: [{ to: '/onboarding', label: 'Cadastrar empresa', icon: Building2 }, explore] }]
+      return [{ title: 'Primeiros passos', items: [{ to: '/onboarding', label: 'Acesso da empresa', icon: Building2 }, explore] }]
     }
     return [
       { title: 'Menu', items: [home, { to: '/talents', label: 'Banco de Talentos', icon: Briefcase }, { to: '/company/invitations', label: 'Convites enviados', icon: Send }, explore] },
@@ -62,6 +62,7 @@ function navFor(role: Role, onboarding: Onboarding | null): NavGroup[] {
         title: 'Administração',
         items: [
           { to: '/admin/wallet', label: 'Carteira Hub+', icon: Wallet },
+          { to: '/admin/companies', label: 'Empresas', icon: Building2 },
           { to: '/admin/withdrawals', label: 'Saques', icon: Receipt },
           { to: '/admin/orders', label: 'Pedidos', icon: ShoppingBag },
         ],

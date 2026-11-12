@@ -18,6 +18,7 @@ export async function getOnboarding(user: AuthUser): Promise<Onboarding> {
     case 'mentor':
       return { required: true, completed: Boolean(user.walletOpened), path: '/onboarding' }
     case 'company':
+      // Não há onboarding: o Hub+ cadastra a empresa (D23). Sem vínculo, a tela explica como pedir o cadastro.
       return { required: true, completed: Boolean(user.companyId), path: '/onboarding' }
     case 'student': {
       const [profile] = await database.select().from(studentProfiles).where(eq(studentProfiles.userId, user.id))

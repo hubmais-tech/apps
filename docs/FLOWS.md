@@ -4,13 +4,15 @@ Como cada perfil usa o Hub+ do começo ao fim. Cada fluxo aponta a decisão que 
 
 ## 1. Cadastro e onboarding (D12)
 
-O cadastro é igual para todos: escolher o perfil (aprender, ensinar ou empresa) e informar nome, e-mail e senha. Logo depois, cada perfil entra no seu onboarding (`/onboarding`).
+O cadastro é igual para quem aprende e quem ensina: escolher o perfil e informar nome, e-mail e senha. Logo depois, cada perfil entra no seu onboarding (`/onboarding`).
+
+> **Empresa não se cadastra sozinha (D23).** A tela de cadastro oferece só aluno e mentor, e a API recusa `role: company`. O Hub+ cadastra a empresa e o responsável, que ativa o acesso pelo convite (seção 4).
 
 | Perfil | Onboarding | Obrigatório? | O que bloqueia enquanto não termina |
 |---|---|---|---|
 | Aluno | 3 passos: sobre você, interesses e objetivo, pronto | **Não**, tem "Pular por agora" | Nada |
 | Mentor | 4 passos: dados pessoais, recebimento (Pix), perfil de mentor, termos e revisão. É a **abertura da carteira** (D13) | **Sim** | Criar cursos, ver carteira, pedir saque, correções e painel do mentor. A API recusa com 403 e o menu mostra só "Abrir carteira" |
-| Empresa | 3 passos: dados da empresa (CNPJ), representante, revisão (D14) | **Sim** | Banco de Talentos, convites e painel da empresa |
+| Empresa | Sem onboarding de cadastro: o Hub+ já cadastrou os dados (D23). O responsável confere num cartão no primeiro acesso | Não se aplica | Conta de empresa sem empresa vinculada (só contas antigas) não entra |
 
 Representante convidado entra por outro caminho: recebe um link `/convite/<token>`, cria a senha e já cai na empresa, sem refazer o cadastro.
 
@@ -41,17 +43,20 @@ Representante convidado entra por outro caminho: recebe um link `/convite/<token
 
 O painel (`/`) resume tudo com dados reais (D19): horas estimadas, sequência, atividade da semana, desafios pendentes e o caminho até o Banco de Talentos.
 
-## 4. Empresa: do cadastro à contratação
+## 4. Empresa: do cadastro pelo Hub+ à contratação
 
-1. **Cadastra a empresa** (`/onboarding`): CNPJ, razão social, nome fantasia, setor, porte, cidade, representante principal.
-2. **Convida representantes** (`/settings?tab=team`): o sistema mostra um link de convite (válido por 7 dias, uso único) para a empresa enviar. Ainda não há envio automático por e-mail (A11).
-3. **Busca talentos** (`/talents`): por texto, área, cidade e bairro. Vê **primeiro nome e inicial do sobrenome**.
-4. **Abre o perfil** (`/talents/:id`): portfólio validado, cursos concluídos, interesses.
-5. **Convida para a vaga:** título e mensagem (mínimo de 20 caracteres). Um convite por vez por talento.
-6. **Acompanha** (`/company/invitations`): enviado, aceito, recusado, retirado, contratado.
-7. **Após o aceite**, vê nome completo, e-mail e WhatsApp, e pode **marcar como contratado** (alimenta o relatório de impacto; a taxa de intermediação ainda não é cobrada, A12).
+1. **A empresa pede o cadastro ao Hub+** e indica quem vai gerenciar a conta.
+2. **O admin cadastra a empresa** (`/admin/companies/new`): CNPJ único, dados da empresa e o responsável (nome, cargo, e-mail e telefone). A tela mostra o link de convite, válido por 7 dias e de uso único, para o admin enviar (A11: não há e-mail automático).
+3. **O responsável ativa o acesso** (`/convite/:token`): cria a senha e entra direto na empresa. No primeiro acesso, um cartão pede para **conferir os dados**. Razão social e CNPJ só o Hub+ corrige.
+4. **Convida representantes** (`/settings?tab=team`): só o responsável adiciona, remove e reenvia convites. O sistema mostra um link de convite (7 dias, uso único).
+5. **Passa a gestão**, quando quiser (`/settings?tab=team`, "Tornar responsável"): a pessoa escolhida precisa ter ativado o acesso, e o antigo responsável vira representante comum. Se o responsável sair da empresa sem passar a gestão, o Hub+ indica outro a pedido da empresa e registra o pedido.
+6. **Busca talentos** (`/talents`): por texto, área, cidade e bairro. Vê **primeiro nome e inicial do sobrenome**.
+7. **Abre o perfil** (`/talents/:id`): portfólio validado, cursos concluídos, interesses.
+8. **Convida para a vaga:** título e mensagem (mínimo de 20 caracteres). Um convite por vez por talento.
+9. **Acompanha** (`/company/invitations`): enviado, aceito, recusado, retirado, contratado.
+10. **Após o aceite**, vê nome completo, e-mail e WhatsApp, e pode **marcar como contratado** (o dado fica guardado para o relatório de impacto, que é pós-MVP, D24; a taxa de intermediação ainda não é cobrada, A12).
 
-Planos e selos (A10) não são aplicados: toda empresa com cadastro completo acessa tudo.
+Planos (A10) não são aplicados e os selos são pós-MVP (D24): toda empresa com cadastro completo acessa tudo.
 
 ## 5. Admin
 
@@ -59,6 +64,7 @@ Planos e selos (A10) não são aplicados: toda empresa com cadastro completo ace
 - **Carteira do Hub+** (`/admin/wallet`): mesma tela do mentor, com as retenções.
 - **Saques** (`/admin/withdrawals`): vê nome completo, CPF, telefone e chave Pix, faz o Pix por fora e marca como pago ou recusa (o valor volta ao saldo).
 - **Pedidos** (`/admin/orders`): lista e reembolso (revoga a matrícula e estorna o ledger).
+- **Empresas** (`/admin/companies`): cadastra empresas (D23), acompanha o estado do acesso (ativo, convite pendente, convite vencido), reenvia convites e indica outro responsável a pedido da empresa.
 
 ## 6. Caminho do dinheiro (D22)
 

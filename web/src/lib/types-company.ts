@@ -97,3 +97,43 @@ export function whatsappLink(phone: string) {
   const national = digits.startsWith('55') && digits.length > 11 ? digits : `55${digits}`
   return `https://wa.me/${national}`
 }
+
+/** Estado do acesso da empresa, pelo responsável principal (D23). */
+export type CompanyAccessStatus = 'active' | 'pending' | 'expired' | 'no_manager'
+
+export const companyAccessMeta: Record<CompanyAccessStatus, { label: string; variant: 'success' | 'accent' | 'destructive' | 'default' }> = {
+  active: { label: 'Acesso ativo', variant: 'success' },
+  pending: { label: 'Convite pendente', variant: 'accent' },
+  expired: { label: 'Convite vencido', variant: 'destructive' },
+  no_manager: { label: 'Sem responsável', variant: 'default' },
+}
+
+export type AdminCompanySummary = {
+  id: string
+  cnpj: string
+  legalName: string
+  tradeName: string
+  city: string
+  state: string
+  createdAt: string
+  status: CompanyAccessStatus
+  manager: { name: string; email: string; jobTitle: string } | null
+  membersCount: number
+}
+
+export type AdminCompanyDetail = Omit<AdminCompanySummary, 'manager' | 'membersCount'> & {
+  size: 'mei' | 'micro' | 'small' | 'medium' | 'large'
+  sector: string
+  website: string | null
+  about: string | null
+  members: {
+    id: string
+    name: string
+    jobTitle: string
+    email: string
+    phone: string | null
+    isPrimary: boolean
+    status: 'active' | 'pending' | 'expired'
+  }[]
+  managerChanges: { id: string; createdAt: string; origin: 'company' | 'admin'; fromName: string | null; toName: string | null; note: string | null }[]
+}

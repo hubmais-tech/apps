@@ -5,12 +5,12 @@ import { z } from 'zod'
 import { roleSchema, selfRegisterRoleSchema } from '@/auth/roles'
 import { database } from '@/database/connection'
 import { companies, companyMembers, users } from '@/database/schema'
+import { hashInviteToken } from '@/services/company-access'
 import { getOnboarding } from '@/services/onboarding'
 import { hashPassword, verifyPassword } from '@/utils/password'
 
 import { strictRateLimit } from '../rate-limit'
-import { ConflictError, NotFoundError, UnauthorizedError } from '../errors/http-errors'
-import { hashInviteToken } from './company'
+import { ConflictError, ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/http-errors'
 
 const userResponse = z.object({
   id: z.uuid(),
@@ -74,6 +74,14 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         throw new UnauthorizedError('E-mail ou senha inválidos.')
       }
 
+      // Conta de empresa sem vínculo com uma empresa cadastrada pelo Hub+ não entra (D23).
+      if (user.role === 'company') {
+        const [member] = await database.select({ id: companyMembers.id }).from(companyMembers).where(eq(companyMembers.userId, user.id))
+        if (!member) {
+          throw new ForbiddenError('O cadastro de empresas agora é feito pelo Hub+. Fale com a equipe do Hub+ para cadastrar sua empresa.')
+        }
+      }
+
       const token = await reply.jwtSign({ sub: user.id, role: user.role })
       return { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }
     },
@@ -108,7 +116,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         params: z.object({ token: z.string().min(20).max(100) }),
-        response: { 200: z.object({ name: z.string(), email: z.string(), jobTitle: z.string(), companyName: z.string() }) },
+        response: { 200: z.object({ name: z.string(), email: z.string(), jobTitle: z.string(), companyName: z.string(), isManager: z.boolean() }) },
       },
     },
     async (request) => {
@@ -118,9 +126,9 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         .innerJoin(companies, eq(companies.id, companyMembers.companyId))
         .where(eq(companyMembers.inviteTokenHash, hashInviteToken(request.params.token)))
       if (!row || row.member.userId || !row.member.inviteExpiresAt || row.member.inviteExpiresAt < new Date()) {
-        throw new NotFoundError('Convite inválido ou vencido. Peça um novo link ao representante principal.')
+        throw new NotFoundError('Convite inválido ou vencido. Peça um novo link ao Hub+ ou ao responsável pela conta da empresa.')
       }
-      return { name: row.member.name, email: row.member.email, jobTitle: row.member.jobTitle, companyName: row.companyName }
+      return { name: row.member.name, email: row.member.email, jobTitle: row.member.jobTitle, companyName: row.companyName, isManager: row.member.isPrimary }
     },
   )
 
@@ -142,7 +150,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         .from(companyMembers)
         .where(eq(companyMembers.inviteTokenHash, hashInviteToken(request.body.token)))
       if (!member || member.userId || !member.inviteExpiresAt || member.inviteExpiresAt < new Date()) {
-        throw new NotFoundError('Convite inválido ou vencido. Peça um novo link ao representante principal.')
+        throw new NotFoundError('Convite inválido ou vencido. Peça um novo link ao Hub+ ou ao responsável pela conta da empresa.')
       }
 
       const [existing] = await database.select({ id: users.id }).from(users).where(eq(users.email, member.email))

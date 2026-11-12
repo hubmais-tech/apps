@@ -3,6 +3,9 @@ import { Route, Routes } from 'react-router-dom'
 import { Layout } from '@/components/layout'
 import { RequireRole } from '@/components/require-role'
 import { AcceptInvitePage } from '@/pages/accept-invite'
+import { AdminCompaniesPage } from '@/pages/admin/companies'
+import { AdminCompanyDetailPage } from '@/pages/admin/company-detail'
+import { AdminCompanyNewPage } from '@/pages/admin/company-new'
 import { AdminOrdersPage } from '@/pages/admin/orders'
 import { AdminOverviewPage } from '@/pages/admin/overview'
 import { AdminWithdrawalsPage } from '@/pages/admin/withdrawals'
@@ -77,6 +80,9 @@ export function App() {
         <Route element={<RequireRole roles={['admin']} />}>
           <Route path="/admin" element={<AdminOverviewPage />} />
           <Route path="/admin/wallet" element={<WalletPage scope="platform" />} />
+          <Route path="/admin/companies" element={<AdminCompaniesPage />} />
+          <Route path="/admin/companies/new" element={<AdminCompanyNewPage />} />
+          <Route path="/admin/companies/:id" element={<AdminCompanyDetailPage />} />
           <Route path="/admin/withdrawals" element={<AdminWithdrawalsPage />} />
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
         </Route>

@@ -8,10 +8,10 @@ Plataforma digital de formação e conexão profissional para jovens de 18 a 26 
 |---|---|
 | **Aluno** | Compra cursos, estuda em vídeo, entrega desafios, recebe certificado, monta o portfólio e aparece no Banco de Talentos. Onboarding opcional, sem CPF |
 | **Mentor** | Abre a carteira (CPF e Pix), cria cursos com vídeos por arrastar e soltar, corrige desafios, acompanha vendas e saca por Pix |
-| **Empresa** | Cadastra o CNPJ e os representantes, busca talentos, convida para vagas e acompanha as respostas |
+| **Empresa** | Tem cadastro único, feito pelo Hub+, e escolhe quem gerencia a conta (D23). Cadastra representantes, busca talentos, convida para vagas e acompanha as respostas |
 | **Admin** | Visão geral da plataforma, pedidos e reembolsos, pagamento de saques e a carteira do Hub+ |
 
-Patrocinadores e doadores não têm login: doam ao Hub+ e recebem selo e relatório (decisão pendente, A8).
+Patrocinadores e doadores não têm login: doam ao Hub+ (decisão pendente, A8). Selo e relatório de impacto ficam para o pós-MVP (D24).
 
 Os fluxos completos de cada perfil estão em [docs/FLOWS.md](docs/FLOWS.md).
 
@@ -59,7 +59,7 @@ pnpm dev
 | `pnpm db:generate` | Gera uma migração a partir do schema |
 | `pnpm db:migrate` | Aplica as migrações |
 
-O seed cria **só o admin**. Mentores, alunos e empresas se cadastram pela própria plataforma.
+O seed cria **só o admin**. Mentores e alunos se cadastram pela própria plataforma. **Empresas não:** o admin cadastra a empresa e o responsável em `/admin/companies/new` e envia o link de convite (D23).
 
 ### Front-end (porta 5173)
 
@@ -87,7 +87,7 @@ pnpm dev
 - Dinheiro sempre em centavos (inteiros).
 - A carteira é calculada a partir de um ledger imutável (`ledger_entries`). O saque é uma solicitação que o admin paga por fora (sem Stripe Connect no MVP).
 - Movimentações financeiras ocorrem dentro de transação do banco.
-- Toda autorização passa por CASL, sem checagem de perfil direto nas rotas. A trava do mentor sem carteira e da empresa sem cadastro também está no CASL.
+- Toda autorização passa por CASL, sem checagem de perfil direto nas rotas. A trava do mentor sem carteira e da empresa sem vínculo também está no CASL.
 - CPF existe só no mentor (necessário para pagar Pix). O aluno nunca informa CPF.
 - Empresas veem só o primeiro nome e a inicial do sobrenome do aluno até ele aceitar um convite.
 

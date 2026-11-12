@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { ArrowRight, Briefcase, GraduationCap, Presentation } from 'lucide-react'
+import { ArrowRight, Building2, GraduationCap, Presentation } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -15,7 +15,6 @@ import { cn } from '@/lib/utils'
 const roles = [
   { value: 'student', label: 'Quero aprender', text: 'Faça cursos curtos e entre no Banco de Talentos.', icon: GraduationCap, tone: 'bg-primary-soft text-primary' },
   { value: 'mentor', label: 'Quero ensinar', text: 'Publique cursos e receba pelas vendas na sua carteira.', icon: Presentation, tone: 'bg-orange-soft text-orange' },
-  { value: 'company', label: 'Sou empresa', text: 'Conheça jovens talentos e acompanhe a formação.', icon: Briefcase, tone: 'bg-sand-soft text-warning' },
 ] as const
 
 type SelfRole = (typeof roles)[number]['value']
@@ -110,6 +109,15 @@ export function RegisterPage() {
           <Button size="lg" className="w-full" onClick={() => setStep(2)}>
             Continuar <ArrowRight />
           </Button>
+          {/* D23: empresa não se cadastra sozinha. */}
+          <div className="flex gap-3 rounded-xl border border-dashed border-border p-3.5">
+            <span className="grid size-[34px] shrink-0 place-items-center rounded-lg bg-sand-soft text-warning">
+              <Building2 className="size-[18px]" />
+            </span>
+            <p className="text-[13px] leading-snug text-muted-foreground">
+              <b className="font-semibold text-foreground">Representa uma empresa?</b> O cadastro de empresas é feito pelo Hub+. Fale com a nossa equipe, informe quem vai gerenciar a conta e a pessoa recebe um convite para entrar.
+            </p>
+          </div>
         </div>
       ) : (
         <form onSubmit={onSubmit} className="space-y-5">
@@ -118,7 +126,7 @@ export function RegisterPage() {
             <p className="mt-1.5 text-[15px] text-muted-foreground">Leva menos de um minuto. Não pedimos CPF agora.</p>
           </div>
           <div className="space-y-4">
-            <Field label={role === 'company' ? 'Nome da empresa' : 'Nome completo'} htmlFor="name">
+            <Field label="Nome completo" htmlFor="name">
               <Input id="name" required minLength={2} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
             <Field label="E-mail" htmlFor="email">

@@ -4,9 +4,9 @@ Plataforma digital de formação e conexão profissional para jovens de 18 a 26 
 
 ## Estado atual
 
-Fases 1 a 6 do plano e o onboarding por perfil estão implementados e testados. Falta a fase 2 (planos corporativos, doações, taxa de contratação, e-mail transacional, etc.), que depende de decisões pendentes (A8 a A13). Documentação em `docs/`:
+Fases 1 a 6 do plano e o onboarding por perfil estão implementados e testados. Falta a fase 2 (planos corporativos, doações, taxa de contratação, e-mail transacional, etc.), que depende de decisões pendentes (A8 a A13). Duas decisões de 2026-11-12: a empresa tem cadastro único feito pelo Hub+ e escolhe quem gerencia a conta (D23, **implementada**: admin cadastra, responsável ativa por convite, só ele gerencia a equipe), e relatório de impacto e selos são pós-MVP (D24). Documentação em `docs/`:
 
-- `PLAN.md`: plano e situação das fases. `DECISIONS.md`: decisões (D1 a D22) e pendências (A6 a A14).
+- `PLAN.md`: plano e situação das fases. `DECISIONS.md`: decisões (D1 a D24) e pendências (A6 a A15).
 - `FLOWS.md`: fluxo de cada perfil. `API.md`: rotas. `DATA-MODEL.md`: tabelas.
 - `BACKLOG.md`: backlog do que falta desenvolver. **É gerado:** edite `docs/jira/backlog.data.mjs` e rode `node docs/jira/build.mjs` (gera também o CSV de importação do Jira). Nunca edite o `BACKLOG.md` à mão.
 
@@ -16,8 +16,8 @@ Fases 1 a 6 do plano e o onboarding por perfil estão implementados e testados. 
 
 1. Venda de cursos: o valor se divide entre o mentor (autor) e o Hub+.
 2. Taxa de intermediação sobre contratações feitas pela plataforma.
-3. Patrocínios e bolsas: empresas doam ao Hub+ e recebem selo e relatório. **Patrocinadores não têm login nem perfil.**
-4. Planos corporativos de acesso ao Banco de Talentos: Essencial, Avançado e Premium, com selos Bronze, Prata e Ouro.
+3. Patrocínios e bolsas: empresas doam ao Hub+. **Patrocinadores não têm login nem perfil.** Selo e relatório de impacto para doadores são pós-MVP (D24).
+4. Planos corporativos de acesso ao Banco de Talentos: Essencial, Avançado e Premium. Os selos Bronze, Prata e Ouro são pós-MVP (D24). **Empresas não se cadastram sozinhas:** o Hub+ cadastra (cadastro único por CNPJ) e a empresa escolhe quem gerencia a conta (D23).
 
 ## Perfis (CASL)
 
@@ -43,7 +43,7 @@ Fases 1 a 6 do plano e o onboarding por perfil estão implementados e testados. 
 - Movimentações financeiras sempre dentro de transação do banco.
 - Toda autorização passa por CASL. Nenhuma rota checa o perfil na mão.
 
-- **Onboarding por perfil (D12):** aluno opcional e sem CPF; mentor e empresa obrigatórios. A trava é da API: `AuthUser` carrega `walletOpened` (mentor) e `companyId` (empresa), e o CASL só concede criar curso, carteira, saque e Banco de Talentos com isso. Nunca confie só no redirecionamento do front-end.
+- **Onboarding por perfil (D12):** aluno opcional e sem CPF; mentor obrigatório. **Empresa não tem onboarding: o Hub+ cadastra (D23).** A trava é da API: `AuthUser` carrega `walletOpened` (mentor) e `companyId` (empresa), e o CASL só concede criar curso, carteira, saque e Banco de Talentos com isso. Nunca confie só no redirecionamento do front-end.
 - **CPF só no mentor** (`mentor_accounts`, D13). Respostas da API devolvem CPF e Pix mascarados. Só o admin que paga o saque vê o CPF completo.
 - **Empresa só vê primeiro nome e inicial** do aluno até ele aceitar o convite (D18).
 - **Certificado** só quando todas as aulas estão concluídas e todos os desafios aprovados (D16). Quem emite é `issueCertificateIfComplete` (`api/src/services/certificates.ts`).
@@ -92,8 +92,8 @@ pnpm dev
 
 ## Estrutura
 
-- `api/src/auth`: CASL (perfis e permissões). `api/src/http/routes`: auth, profile, company, courses, learning, challenges, portfolio, talents, dashboard, checkout (+ webhook), wallet. `api/src/services`: `payment-gateway`, `wallet` (ledger e saques), `orders`, `storage` (R2), `certificates`, `access`, `onboarding`. `api/src/utils`: senha, slug, documentos (CPF, CNPJ, Pix).
-- `api/tests`: `flow` (MVP), `onboarding`, `course-builder`, `engagement` (desafios, certificado, portfólio, talentos), `dashboard`. Os testes rodam contra o Postgres local (`pnpm test`).
+- `api/src/auth`: CASL (perfis e permissões). `api/src/http/routes`: auth, profile, company, admin-companies, courses, learning, challenges, portfolio, talents, dashboard, checkout (+ webhook), wallet. `api/src/services`: `payment-gateway`, `wallet` (ledger e saques), `orders`, `storage` (R2), `certificates`, `access`, `onboarding`, `company-access` (convites e troca de responsável). `api/src/utils`: senha, slug, documentos (CPF, CNPJ, Pix).
+- `api/tests`: `flow` (MVP), `onboarding`, `company` (cadastro pelo Hub+, convite, troca de responsável), `course-builder`, `engagement` (desafios, certificado, portfólio, talentos), `dashboard`. Os testes rodam contra o Postgres local (`pnpm test`).
 - `web/src/pages`: telas por área (`onboarding`, `mentor`, `student`, `company`, `admin`). `web/src/components/ui`: componentes no estilo shadcn. `web/src/components`: `layout` (shell por perfil), `dropzone`, `onboarding-shell`, `week-bars`. `web/src/index.css`: tokens do design system.
 
 ## Armadilhas conhecidas

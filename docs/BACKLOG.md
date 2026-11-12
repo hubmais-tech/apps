@@ -6,9 +6,9 @@ Elaborado em 2026-11-12, com o papel de Scrum Master, a partir do código e dos 
 
 ## 1. Resumo para o Product Owner
 
-- Cada item tem história de usuário, checklist de critérios de aceitação e casos de teste em Dado, Quando e Então (**384 casos de teste no total**).
+- Cada item tem história de usuário, checklist de critérios de aceitação e casos de teste em Dado, Quando e Então (**387 casos de teste no total**).
 - O produto tem as **fases 1 a 6 e o onboarding por perfil prontos** e testados (81 testes na API). O que falta não é "mais funcionalidades": é **colocar em operação com segurança**, **fechar os modelos de receita que dependem de decisões** e **evoluir a experiência**.
-- O backlog tem **14 épicos e 109 itens, somando 623 pontos**. O **go/no-go do piloto fechado** é ao fim da Sprint 5 (152 pontos em 5 sprints de 2 semanas, com a velocidade assumida de 30). O R1 completo tem 196 pontos, cerca de 7 sprints.
+- O backlog tem **15 épicos e 110 itens, somando 626 pontos**. O **go/no-go do piloto fechado** é ao fim da Sprint 5 (152 pontos em 5 sprints de 2 semanas, com a velocidade assumida de 30). O R1 completo tem 196 pontos, cerca de 7 sprints.
 - **14 decisões em aberto** travam itens (seção 9). A maior parte é resolvida por spikes na própria Sprint 1 (hospedagem, e-mail, nota fiscal, menores de 18, Pix no Stripe). **Só a N5, a política de reembolso depois dos 7 dias, não tem spike que a resolva: ela precisa de decisão sua antes da Sprint 2.** As demais ganham uma recomendação na Sprint 1, que você aprova. Os spikes dependem de terceiros (contador, jurídico, provedores), então agende essas conversas antes de a sprint começar.
 - Três riscos críticos de negócio antes de cobrar o primeiro real: **obrigação fiscal** (N4), **reembolso em 7 dias feito pelo aluno** (direito de arrependimento) e **CPF e chave Pix guardados sem criptografia**.
 
@@ -51,6 +51,13 @@ Montei o plano com estas suposições. Se alguma estiver errada, muda o plano.
 | 3 | Velocidade de **30 pontos por sprint**, para uma equipe de dois desenvolvedores full-stack com você como PO | Recalibrar depois da Sprint 1. Equipe maior ou menor muda o número de sprints do R1 |
 | 4 | Sem data-alvo definida. O plano usa "Sprint N" e não datas | Com uma data fixa, corte escopo do R1 pelo critério de entrada do piloto (seção 6) |
 | 5 | Decisões e conteúdos jurídico e fiscal são responsabilidade do PO e de assessorias externas | Atraso nelas atrasa E02, E03, E04 e E13 |
+
+### Mudanças de escopo registradas
+
+| Data | Mudança | Efeito no backlog |
+|---|---|---|
+| 2026-11-12 | Empresas **não se cadastram sozinhas**: o Hub+ faz o cadastro único e a empresa escolhe quem gerencia a conta (D23) | **Já entregue no código** (antigo épico E15: cadastro pelo admin, ativação por convite, lista de empresas e troca de responsável). Nada disso consta mais neste backlog. Falta só o envio do convite por e-mail, que está em E04-S02 |
+| 2026-11-12 | **Relatório de impacto e selos** ficam para depois do MVP (D24) | Itens movidos para o épico E16, release Pós-MVP: relatório de impacto, selo e transparência do apoiador, coleta de dados de impacto e selos das empresas. Planos, doações e bolsas continuam no R3 |
 
 ## 4. Definições de trabalho
 
@@ -103,14 +110,15 @@ Onde o negócio ainda não decidiu, os casos de teste usam **valores de exemplo*
 | **E06** Experiência de aprendizagem e catálogo | R2 | P1 Alta | 9 | 54 | — |
 | **E07** Mentores e curadoria | R2 | P1 Alta | 7 | 51 | A13, N2 |
 | **E08** Banco de Talentos e empresas | R3 | P2 Média | 8 | 68 | A10, A12 |
-| **E09** Impacto social, bolsas e doações | R3 | P2 Média | 6 | 52 | A8 |
+| **E09** Doações e bolsas | R3 | P2 Média | 3 | 31 | A8 |
 | **E10** Administração e operação | R2 | P1 Alta | 7 | 42 | A14 |
 | **E11** Qualidade e testes | R1 | P1 Alta | 8 | 54 | — |
 | **E12** Site institucional e crescimento | R2 | P2 Média | 6 | 29 | A6 |
 | **E13** Fiscal e jurídico | R1 | P0 Crítica | 5 | 28 | N5, N4 |
+| **E16** Relatório de impacto e selos (pós-MVP) | PM | P3 Baixa | 4 | 24 | A10 |
 | **E14** Melhorias e dívida técnica identificadas | R2 | P2 Média | 6 | 18 | — |
 
-Total: **109 itens e 623 pontos**.
+Total: **110 itens e 626 pontos**.
 
 ## 6. Releases e roteiro
 
@@ -118,7 +126,8 @@ Total: **109 itens e 623 pontos**.
 |---|---|---|---|
 | **R1 · Piloto fechado** | Colocar uma turma piloto de Aracaju para usar a plataforma de verdade, com pagamento real, dados protegidos e operação sob controle. | 196 | 7 |
 | **R2 · Lançamento público** | Abrir para o público com catálogo rico, comunicação, curadoria e ferramentas de suporte. | 309 | 11 |
-| **R3 · Receita corporativa e impacto** | Ligar os modelos de receita que dependem de decisões de negócio: planos, doações, bolsas e taxa de contratação. | 118 | 4 |
+| **R3 · Receita corporativa** | Ligar os modelos de receita que dependem de decisões de negócio: planos, doações, bolsas e taxa de contratação. | 97 | 4 |
+| **Pós-MVP · Versões futuras** | Itens que o responsável do produto decidiu deixar para depois do MVP: relatório de impacto social e selos. | 24 | 1 |
 
 ### Critérios de entrada do piloto (go/no-go ao fim da Sprint 5)
 
@@ -206,25 +215,32 @@ Capacidade assumida: 30 pontos. Sprints acima disso estão sinalizadas.
 | E03-S09 Revisão de segurança (OWASP ASVS nível 1) e auditoria de dependências | Task | 5 | — |
 | E11-S02 Testes de ponta a ponta com Playwright nos fluxos críticos | Task | 13 | — |
 
-### Sprint 6 · 29 pontos
+### Sprint 6 · 16 pontos
 
-**Meta:** Piloto no ar, primeiros ajustes: Pix assíncrono, paginação do admin, testes do front-end e acabamentos.
+**Meta:** Piloto no ar, primeiros ajustes: Pix assíncrono e e-mail do convite.
 
 | Item | Tipo | Pts | Decisão |
 |---|---|---|---|
 | E02-S03 Pagamento assíncrono (Pix e boleto) com pedido pendente na tela | Story | 5 | depende de A9 |
 | E04-S04 Trocar senha e e-mail dentro da conta | Story | 3 | — |
 | E04-S06 Enviar o convite de representante por e-mail | Task | 2 | — |
-| E10-S02 Paginação e filtros em pedidos, saques, correções e convites | Task | 5 | — |
-| E11-S01 Testes de componentes e hooks no front-end | Task | 8 | — |
 | E12-S04 Central de ajuda e canal de suporte | Story | 3 | — |
 | E14-S03 Validar que o arquivo existe no R2 ao criar a aula ou a entrega | Task | 3 | — |
 
-### R1 ainda sem sprint · 15 pontos
+### Sprint 7 · 18 pontos
 
-Entram na Sprint 7, depois de recalibrar a velocidade com os dados reais das sprints anteriores.
+**Meta:** Qualidade: paginação do admin, testes do front-end e taxa real do Stripe.
 
-- E02-S05 Gravar a taxa real do Stripe em cada pedido (5 pts)
+| Item | Tipo | Pts | Decisão |
+|---|---|---|---|
+| E02-S05 Gravar a taxa real do Stripe em cada pedido | Task | 5 | depende de A14 |
+| E10-S02 Paginação e filtros em pedidos, saques, correções e convites | Task | 5 | — |
+| E11-S01 Testes de componentes e hooks no front-end | Task | 8 | — |
+
+### R1 ainda sem sprint · 10 pontos
+
+Entram na Sprint 8, depois de recalibrar a velocidade com os dados reais das sprints anteriores.
+
 - E04-S05 Confirmar o e-mail no cadastro (5 pts)
 - E11-S03 Ampliar testes da API: webhook, erros do R2 e concorrência (5 pts)
 
@@ -818,7 +834,7 @@ Como aluno, quero pedir reembolso sozinho durante a janela de garantia, para exe
 
 #### [P1] Gravar a taxa real do Stripe em cada pedido
 
-**Código:** E02-S05 · **Tipo:** Task · **Pontos:** 5 · **Release:** R1
+**Código:** E02-S05 · **Tipo:** Task · **Pontos:** 5 · **Release:** R1 · **Sprint:** 7
 
 **História de usuário**
 
@@ -2778,7 +2794,7 @@ Como time do Hub+, quero entender como um curso com mais de um mentor funcionari
 
 ### E08 · Banco de Talentos e empresas
 
-**Release:** R3 · Receita corporativa e impacto · **Prioridade:** P2 Média · **8 itens, 68 pontos**
+**Release:** R3 · Receita corporativa · **Prioridade:** P2 Média · **8 itens, 68 pontos**
 
 **Objetivo:** Do convite à contratação, com planos, vagas, mensagens e a taxa de intermediação.
 
@@ -2831,11 +2847,11 @@ Como empresa com cadastro completo, quero publicar uma vaga e receber candidatur
 
 **História de usuário**
 
-Como Hub+, quero aplicar planos com limite de perfis e selo para cada empresa, para organizar o acesso ao Banco de Talentos e ter uma receita previsível.
+Como Hub+, quero aplicar planos com limite de perfis para cada empresa, para organizar o acesso ao Banco de Talentos e ter uma receita previsível.
 
 **Checklist de critérios de aceitação**
 
-- [ ] Planos, limites de perfis por mês e selos definidos (fecha A10).
+- [ ] Planos e limites de perfis por mês definidos (fecha A10), sem selos, que ficam para o pós-MVP.
 - [ ] A API aplica o limite e a tela mostra o uso.
 - [ ] Empresa sem plano mantém o acesso do período de experiência definido.
 
@@ -2845,7 +2861,7 @@ Como Hub+, quero aplicar planos com limite de perfis e selo para cada empresa, p
 
 - **Dado que** a decisão A10 respondida pelo responsável do produto
 - **Quando** o item for entregue
-- **Então** docs/DECISIONS.md registra os planos Essencial, Avançado e Premium, o limite mensal de perfis de cada um e o selo correspondente (Bronze, Prata, Ouro), e o item A10 sai da lista de pendências.
+- **Então** docs/DECISIONS.md registra os planos Essencial, Avançado e Premium e o limite mensal de perfis de cada um, e o item A10 sai da lista de pendências. Os selos não fazem parte desta entrega.
 
 *CT-02 — API aplica o limite do plano*
 
@@ -2857,7 +2873,7 @@ Como Hub+, quero aplicar planos com limite de perfis e selo para cada empresa, p
 
 - **Dado que** a mesma empresa com 12 perfis abertos no mês
 - **Quando** ela abrir o Banco de Talentos
-- **Então** a faixa do plano mostra "12 de 30" perfis, o selo Bronze e a data em que o contador zera.
+- **Então** a faixa do plano mostra "12 de 30" perfis e a data em que o contador zera.
 
 *CT-04 — Empresa sem plano no período de experiência*
 
@@ -2866,7 +2882,7 @@ Como Hub+, quero aplicar planos com limite de perfis e selo para cada empresa, p
 - **Então** durante o período a busca funciona normalmente, e depois dele a API devolve 403 com orientação para escolher um plano.
 
 
-**Bloqueada pela decisão:** A10: Planos corporativos: limites, preços e selos
+**Bloqueada pela decisão:** A10: Planos corporativos: limites de perfis e preços (os selos ficam para o pós-MVP)
 
 #### [P2] Cobrança recorrente dos planos
 
@@ -2911,7 +2927,7 @@ Como empresa, quero assinar e pagar o plano do Banco de Talentos de forma recorr
 
 **Depende de:** E08-S02 (Modelar os planos e limites das empresas)
 
-**Bloqueada pela decisão:** A10: Planos corporativos: limites, preços e selos
+**Bloqueada pela decisão:** A10: Planos corporativos: limites de perfis e preços (os selos ficam para o pós-MVP)
 
 #### [P2] Taxa de intermediação sobre a contratação
 
@@ -3099,13 +3115,13 @@ Como talento, quero denunciar um convite suspeito e bloquear a empresa, para me 
 
 **Depende de:** E10-S04 (Denunciar conteúdo e fila de moderação)
 
-### E09 · Impacto social, bolsas e doações
+### E09 · Doações e bolsas
 
-**Release:** R3 · Receita corporativa e impacto · **Prioridade:** P2 Média · **6 itens, 52 pontos**
+**Release:** R3 · Receita corporativa · **Prioridade:** P2 Média · **3 itens, 31 pontos**
 
-**Objetivo:** Doações viram bolsas, selos e relatórios de impacto.
+**Objetivo:** Doações de empresas e apoiadores viram bolsas para jovens.
 
-**Por que importa:** É o terceiro modelo de receita e a prestação de contas aos apoiadores.
+**Por que importa:** É o terceiro modelo de receita e o caminho para quem não pode pagar o curso.
 
 #### [P2] Doação de empresas e apoiadores
 
@@ -3113,12 +3129,12 @@ Como talento, quero denunciar um convite suspeito e bloquear a empresa, para me 
 
 **História de usuário**
 
-Como empresa apoiadora, quero doar ao Hub+ sem criar login e receber recibo e selo, para apoiar a formação dos jovens e ter o reconhecimento combinado.
+Como empresa apoiadora, quero doar ao Hub+ sem criar login e receber recibo, para apoiar a formação dos jovens e ter o comprovante da doação.
 
 **Checklist de critérios de aceitação**
 
 - [ ] Página pública de doação com Pix e cartão (conforme A8).
-- [ ] Registro da doação, recibo e selo correspondente ao valor.
+- [ ] Registro da doação e recibo com os dados do doador e o valor.
 - [ ] A carteira do Hub+ separa doação de retenção.
 
 **Casos de teste**
@@ -3129,11 +3145,11 @@ Como empresa apoiadora, quero doar ao Hub+ sem criar login e receber recibo e se
 - **Quando** ele doar R$ 500,00 com um cartão de teste informando nome da empresa e e-mail
 - **Então** a doação é registrada como "paga", o recibo é enviado ao e-mail informado e nenhuma conta de usuário é criada.
 
-*CT-02 — Selo conforme o valor doado*
+*CT-02 — Recibo com os dados da doação*
 
-- **Dado que** a faixa de valor do selo Bronze definida em A8 e A10
-- **Quando** uma doação atingir essa faixa
-- **Então** o doador recebe o selo Bronze, e uma doação abaixo da faixa recebe só o recibo.
+- **Dado que** uma doação paga de R$ 500,00 feita por uma empresa com CNPJ informado
+- **Quando** o recibo for gerado
+- **Então** o recibo traz nome da empresa, CNPJ, valor, data e forma de pagamento, e pode ser baixado a partir do e-mail.
 
 *CT-03 — Doação separada da retenção na carteira do Hub+*
 
@@ -3194,112 +3210,6 @@ Como jovem sem condições de pagar o curso, quero concorrer a uma bolsa financi
 **Depende de:** E09-S01 (Doação de empresas e apoiadores)
 
 **Bloqueada pela decisão:** A8: Como a doação de empresas é recebida
-
-#### [P2] Relatório de impacto social para apoiadores
-
-**Código:** E09-S03 · **Tipo:** Story · **Pontos:** 8 · **Release:** R3
-
-**História de usuário**
-
-Como apoiador do Hub+, quero ver o resultado do que financiei em um relatório simples, para prestar contas à minha organização e decidir se continuo apoiando.
-
-**Checklist de critérios de aceitação**
-
-- [ ] O relatório mostra, para o período escolhido, alunos formados, certificados emitidos, contratações e bairros de origem.
-- [ ] O relatório pode ser exportado em PDF e em CSV com os mesmos números da tela.
-- [ ] O relatório não contém nome, e-mail nem outro dado que identifique uma pessoa.
-- [ ] Bairros com menos de 5 pessoas aparecem agrupados como "Outros".
-
-**Casos de teste**
-
-*CT-01 — Totais batem com os dados*
-
-- **Dado que** um período com 120 certificados emitidos e 8 contratações validadas registrados no sistema
-- **Quando** o relatório for gerado para esse período
-- **Então** a tela mostra 120 certificados e 8 contratações, e a soma por bairro é igual ao total de alunos formados.
-
-*CT-02 — Exportação em PDF e CSV*
-
-- **Dado que** o relatório do mesmo período na tela
-- **Quando** o usuário exportar em PDF e em CSV
-- **Então** os dois arquivos trazem os mesmos números da tela e identificam o período e a data de geração.
-
-*CT-03 — Dados anonimizados*
-
-- **Dado que** um bairro com 3 alunos formados e outro com 40
-- **Quando** o relatório for gerado
-- **Então** o bairro de 3 alunos aparece dentro de "Outros", o de 40 aparece com o nome, e nenhum nome ou e-mail existe na tela, no PDF ou no CSV.
-
-
-#### [P2] Selo e página de transparência do apoiador
-
-**Código:** E09-S04 · **Tipo:** Story · **Pontos:** 8 · **Release:** R3
-
-**História de usuário**
-
-Como apoiador, quero uma página pública que mostre minha contribuição e o impacto dela, para divulgar meu apoio ao Hub+ com a minha marca.
-
-**Checklist de critérios de aceitação**
-
-- [ ] Página pública por apoiador, com selo e métricas.
-- [ ] O apoiador autoriza a exibição do nome e da logo.
-
-**Casos de teste**
-
-*CT-01 — Página pública com autorização*
-
-- **Dado que** um apoiador que autorizou a exibição do nome e da logo
-- **Quando** qualquer pessoa abrir a página pública dele
-- **Então** a página mostra nome, logo, selo e as métricas de impacto, sem exigir login.
-
-*CT-02 — Sem autorização, sem página*
-
-- **Dado que** um apoiador que não autorizou a exibição do nome e da logo
-- **Quando** alguém abrir o endereço da página dele
-- **Então** a página devolve 404 e o nome e a logo não aparecem em nenhuma lista pública.
-
-*CT-03 — Revogar a autorização*
-
-- **Dado que** um apoiador com página pública ativa
-- **Quando** ele revogar a autorização
-- **Então** a página deixa de existir imediatamente, o endereço devolve 404 e o selo some da listagem de apoiadores.
-
-
-**Depende de:** E09-S01 (Doação de empresas e apoiadores)
-
-#### [P3] Coleta opcional de dados para medir impacto
-
-**Código:** E09-S05 · **Tipo:** Story · **Pontos:** 5 · **Release:** R3
-
-**História de usuário**
-
-Como Hub+, quero coletar de forma opcional dados que ajudem a medir o impacto social, para provar os resultados aos apoiadores sem expor nenhum jovem.
-
-**Checklist de critérios de aceitação**
-
-- [ ] Perguntas opcionais (renda familiar, primeiro emprego) com consentimento.
-- [ ] Uso só agregado e anonimizado nos relatórios.
-
-**Casos de teste**
-
-*CT-01 — Perguntas são opcionais*
-
-- **Dado que** um aluno diante das perguntas de renda familiar e primeiro emprego
-- **Quando** ele pular todas as perguntas
-- **Então** ele continua usando a plataforma normalmente e nenhum dado de impacto é gravado para ele.
-
-*CT-02 — Sem consentimento, sem gravação*
-
-- **Dado que** um aluno que respondeu às perguntas sem marcar o consentimento
-- **Quando** ele enviar o formulário
-- **Então** a API recusa o envio com status 400 e as respostas não são gravadas.
-
-*CT-03 — Uso só agregado*
-
-- **Dado que** respostas de 60 alunos com consentimento gravadas
-- **Quando** o admin consultar o relatório de impacto e a API de administração
-- **Então** os resultados aparecem só em totais e percentuais, e nenhuma rota devolve a resposta de um aluno específico.
-
 
 #### [P2] Painel e conciliação de doações no admin
 
@@ -3390,7 +3300,7 @@ Como pessoa do time de suporte, quero encontrar uma conta e suspendê-la ou reat
 
 #### [P1] Paginação e filtros em pedidos, saques, correções e convites
 
-**Código:** E10-S02 · **Tipo:** Task · **Pontos:** 5 · **Release:** R1 · **Sprint:** 6
+**Código:** E10-S02 · **Tipo:** Task · **Pontos:** 5 · **Release:** R1 · **Sprint:** 7
 
 **História de usuário**
 
@@ -3635,7 +3545,7 @@ Como Hub+, quero dar a cada pessoa do time só o acesso de que ela precisa, para
 
 #### [P1] Testes de componentes e hooks no front-end
 
-**Código:** E11-S01 · **Tipo:** Task · **Pontos:** 8 · **Release:** R1 · **Sprint:** 6
+**Código:** E11-S01 · **Tipo:** Task · **Pontos:** 8 · **Release:** R1 · **Sprint:** 7
 
 **História de usuário**
 
@@ -4416,6 +4326,159 @@ Como Hub+, quero uma política clara para menores de 18 anos, para tratar os dad
 
 **Entrega a decisão:** N3: Política para menores de 18 anos (o cadastro de aluno hoje não impede)
 
+### E16 · Relatório de impacto e selos (pós-MVP)
+
+**Release:** Pós-MVP · Versões futuras · **Prioridade:** P3 Baixa · **4 itens, 24 pontos**
+
+**Objetivo:** Relatório de impacto social e selos de empresas e apoiadores, depois que o MVP estiver no ar.
+
+**Por que importa:** Prestação de contas e reconhecimento. O responsável do produto decidiu que não fazem parte do MVP (decisão D24).
+
+#### [P3] Relatório de impacto social para apoiadores
+
+**Código:** E16-S01 · **Tipo:** Story · **Pontos:** 8 · **Release:** PM
+
+**História de usuário**
+
+Como apoiador do Hub+, quero ver o resultado do que financiei em um relatório simples, para prestar contas à minha organização e decidir se continuo apoiando.
+
+**Checklist de critérios de aceitação**
+
+- [ ] O relatório mostra, para o período escolhido, alunos formados, certificados emitidos, contratações e bairros de origem.
+- [ ] O relatório pode ser exportado em PDF e em CSV com os mesmos números da tela.
+- [ ] O relatório não contém nome, e-mail nem outro dado que identifique uma pessoa.
+- [ ] Bairros com menos de 5 pessoas aparecem agrupados como "Outros".
+
+**Casos de teste**
+
+*CT-01 — Totais batem com os dados*
+
+- **Dado que** um período com 120 certificados emitidos e 8 contratações validadas registrados no sistema
+- **Quando** o relatório for gerado para esse período
+- **Então** a tela mostra 120 certificados e 8 contratações, e a soma por bairro é igual ao total de alunos formados.
+
+*CT-02 — Exportação em PDF e CSV*
+
+- **Dado que** o relatório do mesmo período na tela
+- **Quando** o usuário exportar em PDF e em CSV
+- **Então** os dois arquivos trazem os mesmos números da tela e identificam o período e a data de geração.
+
+*CT-03 — Dados anonimizados*
+
+- **Dado que** um bairro com 3 alunos formados e outro com 40
+- **Quando** o relatório for gerado
+- **Então** o bairro de 3 alunos aparece dentro de "Outros", o de 40 aparece com o nome, e nenhum nome ou e-mail existe na tela, no PDF ou no CSV.
+
+
+#### [P3] Selo e página de transparência do apoiador
+
+**Código:** E16-S02 · **Tipo:** Story · **Pontos:** 8 · **Release:** PM
+
+**História de usuário**
+
+Como apoiador, quero uma página pública que mostre minha contribuição e o impacto dela, para divulgar meu apoio ao Hub+ com a minha marca.
+
+**Checklist de critérios de aceitação**
+
+- [ ] Página pública por apoiador, com selo e métricas.
+- [ ] O apoiador autoriza a exibição do nome e da logo.
+
+**Casos de teste**
+
+*CT-01 — Página pública com autorização*
+
+- **Dado que** um apoiador que autorizou a exibição do nome e da logo
+- **Quando** qualquer pessoa abrir a página pública dele
+- **Então** a página mostra nome, logo, selo e as métricas de impacto, sem exigir login.
+
+*CT-02 — Sem autorização, sem página*
+
+- **Dado que** um apoiador que não autorizou a exibição do nome e da logo
+- **Quando** alguém abrir o endereço da página dele
+- **Então** a página devolve 404 e o nome e a logo não aparecem em nenhuma lista pública.
+
+*CT-03 — Revogar a autorização*
+
+- **Dado que** um apoiador com página pública ativa
+- **Quando** ele revogar a autorização
+- **Então** a página deixa de existir imediatamente, o endereço devolve 404 e o selo some da listagem de apoiadores.
+
+
+**Depende de:** E09-S01 (Doação de empresas e apoiadores)
+
+#### [P3] Coleta opcional de dados para medir impacto
+
+**Código:** E16-S03 · **Tipo:** Story · **Pontos:** 5 · **Release:** PM
+
+**História de usuário**
+
+Como Hub+, quero coletar de forma opcional dados que ajudem a medir o impacto social, para provar os resultados aos apoiadores sem expor nenhum jovem.
+
+**Checklist de critérios de aceitação**
+
+- [ ] Perguntas opcionais (renda familiar, primeiro emprego) com consentimento.
+- [ ] Uso só agregado e anonimizado nos relatórios.
+
+**Casos de teste**
+
+*CT-01 — Perguntas são opcionais*
+
+- **Dado que** um aluno diante das perguntas de renda familiar e primeiro emprego
+- **Quando** ele pular todas as perguntas
+- **Então** ele continua usando a plataforma normalmente e nenhum dado de impacto é gravado para ele.
+
+*CT-02 — Sem consentimento, sem gravação*
+
+- **Dado que** um aluno que respondeu às perguntas sem marcar o consentimento
+- **Quando** ele enviar o formulário
+- **Então** a API recusa o envio com status 400 e as respostas não são gravadas.
+
+*CT-03 — Uso só agregado*
+
+- **Dado que** respostas de 60 alunos com consentimento gravadas
+- **Quando** o admin consultar o relatório de impacto e a API de administração
+- **Então** os resultados aparecem só em totais e percentuais, e nenhuma rota devolve a resposta de um aluno específico.
+
+
+#### [P3] Selos das empresas (Bronze, Prata e Ouro)
+
+**Código:** E16-S04 · **Tipo:** Story · **Pontos:** 3 · **Release:** PM
+
+**História de usuário**
+
+Como Hub+, quero atribuir um selo a cada empresa conforme o plano, para reconhecer quem investe no Banco de Talentos.
+
+**Checklist de critérios de aceitação**
+
+- [ ] Os selos Bronze, Prata e Ouro e a regra de cada um ficam registrados em `docs/DECISIONS.md`.
+- [ ] O selo aparece no perfil da empresa e nos convites que o aluno recebe.
+- [ ] Mudar de plano muda o selo.
+
+**Casos de teste**
+
+*CT-01 — Regra dos selos registrada*
+
+- **Dado que** a decisão A10 respondida pelo responsável do produto
+- **Quando** o item for entregue
+- **Então** docs/DECISIONS.md registra a regra de cada selo (Bronze, Prata e Ouro) e o plano ao qual corresponde.
+
+*CT-02 — Selo aparece para empresa e para o aluno*
+
+- **Dado que** uma empresa no plano que dá o selo Prata
+- **Quando** ela abrir o perfil da empresa e enviar um convite a um aluno
+- **Então** o selo Prata aparece no perfil da empresa e no convite que o aluno recebe.
+
+*CT-03 — Mudar de plano muda o selo*
+
+- **Dado que** uma empresa com selo Bronze
+- **Quando** ela trocar para o plano que dá o selo Ouro
+- **Então** o selo passa a ser Ouro no perfil e nos novos convites, e os convites já enviados mantêm o selo da época.
+
+
+**Depende de:** E08-S02 (Modelar os planos e limites das empresas)
+
+**Bloqueada pela decisão:** A10: Planos corporativos: limites de perfis e preços (os selos ficam para o pós-MVP)
+
 ### E14 · Melhorias e dívida técnica identificadas
 
 **Release:** R2 · Lançamento público · **Prioridade:** P2 Média · **6 itens, 18 pontos**
@@ -4676,12 +4739,12 @@ As decisões **A** estão em `docs/DECISIONS.md`. As **N** foram levantadas nest
 | **N5** | Reembolso depois da janela de 7 dias: política e quem arca | **PO** | E02-S04, E13-S02 | início da Sprint 2 |
 | **N1** | Hospedagem de produção (API, banco e front-end) | spike E01-S04 (Sprint 1) | E01-S05 | início da Sprint 4 |
 | **A9** | Pix no Stripe Brasil e Stripe Connect para saque automático | spike E02-S01 (Sprint 1) | E02-S03 | início da Sprint 6 |
+| **A14** | Quem arca com a taxa do Stripe e valores reais da taxa | **PO** | E02-S05, E10-S06 | início da Sprint 7 |
 | **A6** | Logo em alta resolução ou vetorial | **PO** | E12-S05 | sem sprint definida |
 | **A8** | Como a doação de empresas é recebida | **PO** | E09-S01, E09-S02 | sem sprint definida |
-| **A10** | Planos corporativos: limites, preços e selos | **PO** | E08-S02, E08-S03 | sem sprint definida |
+| **A10** | Planos corporativos: limites de perfis e preços (os selos ficam para o pós-MVP) | **PO** | E08-S02, E08-S03, E16-S04 | sem sprint definida |
 | **A12** | Taxa de intermediação sobre contratação | **PO** | E08-S04 | sem sprint definida |
 | **A13** | Verificação de identidade do mentor e antifraude de saque | **PO** | E07-S01 | sem sprint definida |
-| **A14** | Quem arca com a taxa do Stripe e valores reais da taxa | **PO** | E02-S05, E10-S06 | sem sprint definida |
 | **N2** | Curso passa por aprovação do admin antes de publicar, ou é publicado direto e revisado depois? | **PO** | E07-S02 | sem sprint definida |
 | **N3** | Política para menores de 18 anos (o cadastro de aluno hoje não impede) | spike E13-S05 (Sprint 1) | — | sem sprint definida |
 | **N4** | Regime fiscal e emissão de nota fiscal (retenção do Hub+ e repasse ao mentor) | spike E13-S01 (Sprint 1) | E13-S03 | sem sprint definida |

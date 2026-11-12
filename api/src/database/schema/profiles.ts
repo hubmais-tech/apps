@@ -51,6 +51,8 @@ export const companies = pgTable('companies', {
   state: text().notNull(),
   website: text(),
   about: text(),
+  /** Admin que cadastrou a empresa (D23). Nulo nas empresas criadas antes dessa decisão. */
+  createdByUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 })
@@ -76,3 +78,19 @@ export const companyMembers = pgTable(
   },
   (t) => [unique().on(t.companyId, t.email)],
 )
+
+/** Histórico de quem gerencia a conta da empresa (D23). Cada troca de responsável gera uma linha. */
+export const companyManagerChanges = pgTable('company_manager_changes', {
+  id: uuid().primaryKey().defaultRandom(),
+  companyId: uuid()
+    .references(() => companies.id, { onDelete: 'cascade' })
+    .notNull(),
+  fromMemberId: uuid().references(() => companyMembers.id, { onDelete: 'set null' }),
+  toMemberId: uuid().references(() => companyMembers.id, { onDelete: 'set null' }),
+  changedByUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
+  /** `company`: o próprio responsável passou a gestão. `admin`: o Hub+ indicou, a pedido da empresa. */
+  origin: text().notNull(),
+  /** Pedido da empresa registrado pelo admin (quem pediu e por quê). */
+  note: text(),
+  createdAt: timestamp().defaultNow().notNull(),
+})

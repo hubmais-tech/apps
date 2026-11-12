@@ -26,11 +26,11 @@ Legenda de "Quem": **público** (sem token), **logado** (qualquer perfil), **alu
 
 | Método e rota | Quem | O que faz |
 |---|---|---|
-| `POST /auth/register` | público | Cria conta. Corpo: `name`, `email`, `password` (mín. 8), `role` (`student`, `mentor` ou `company`; admin só pelo seed). Devolve `{ token, user }` |
-| `POST /auth/login` | público | Login por e-mail e senha. Mensagem única para e-mail ou senha errados |
+| `POST /auth/register` | público | Cria conta. Corpo: `name`, `email`, `password` (mín. 8), `role` (`student` ou `mentor`; empresa não se cadastra sozinha, D23; admin só pelo seed). Devolve `{ token, user }` |
+| `POST /auth/login` | público | Login por e-mail e senha. Mensagem única para e-mail ou senha errados. 403 para conta de empresa sem empresa vinculada (D23) |
 | `GET /me` | logado | `{ user, onboarding }`. `onboarding` = `{ required, completed, path }` (D12) |
-| `GET /auth/invite/:token` | público | Dados do convite de representante (nome, cargo, empresa). 404 se inválido, usado ou vencido |
-| `POST /auth/accept-invite` | público | Representante convidado cria a senha. Corpo: `token`, `password`. Devolve `{ token, user }` |
+| `GET /auth/invite/:token` | público | Dados do convite de representante (nome, cargo, empresa e `isManager`, se é o responsável pela conta). 404 se inválido, usado ou vencido |
+| `POST /auth/accept-invite` | público | Representante convidado, inclusive o responsável cadastrado pelo Hub+ (D23), cria a senha. Corpo: `token`, `password`. Devolve `{ token, user }` |
 
 ## Perfis e onboarding
 
@@ -42,12 +42,22 @@ Legenda de "Quem": **público** (sem token), **logado** (qualquer perfil), **alu
 | `GET /me/mentor-account` | mentor | Dados da carteira, com CPF e Pix **mascarados**. 404 se ainda não abriu |
 | `POST /me/mentor-account` | mentor | **Abre a carteira** (D13). Valida CPF, maioridade, Pix e termos. 409 se já aberta ou se o CPF já existe |
 | `PATCH /me/mentor-account` | mentor | Altera telefone, bio, áreas e chave Pix. Nome, CPF e nascimento não mudam |
-| `GET /company` | empresa | Empresa e representantes. 404 se ainda não cadastrou |
-| `POST /company` | empresa | Cadastra a empresa (CNPJ validado). Quem cadastra vira representante principal (D14) |
-| `PATCH /company` | empresa | Altera dados. O CNPJ não muda |
-| `POST /company/members` | empresa | Cadastra um representante e gera o link de convite (válido por 7 dias) |
-| `POST /company/members/:id/invite` | empresa | Gera novo link. O anterior deixa de valer |
-| `DELETE /company/members/:id` | empresa (principal) | Remove um representante. O principal não pode ser removido |
+| `GET /company` | empresa | Empresa e representantes. `isOwner` indica o responsável pela conta. 404 se a conta não tem empresa |
+| `PATCH /company` | empresa | Altera dados. CNPJ e razão social só o Hub+ altera (D23) |
+| `POST /company/members` | empresa (responsável) | Cadastra um representante e gera o link de convite (válido por 7 dias) |
+| `POST /company/members/:id/invite` | empresa (responsável) | Gera novo link. O anterior deixa de valer |
+| `DELETE /company/members/:id` | empresa (responsável) | Remove um representante. O responsável não pode ser removido |
+| `POST /company/manager` | empresa (responsável) | Passa a gestão da conta. Corpo: `memberId`. O novo responsável precisa ter ativado o acesso. 204 |
+
+### Empresas cadastradas pelo Hub+ (D23)
+
+| Método e rota | Quem | O que faz |
+|---|---|---|
+| `POST /admin/companies` | admin | Cadastra a empresa e o responsável indicado. Corpo: dados da empresa, `cnpj` e `manager` (`name`, `jobTitle`, `email`, `phone`). 409 se o CNPJ já existe ou se o e-mail já tem conta. Devolve `inviteUrl` e `inviteExpiresAt` |
+| `GET /admin/companies` | admin | Lista com `status` do acesso (`active`, `pending`, `expired`, `no_manager`). Filtros `status` e `q` (nome, CNPJ ou responsável) |
+| `GET /admin/companies/:id` | admin | Detalhe: dados, representantes e histórico de trocas de responsável |
+| `POST /admin/companies/:id/members/:memberId/invite` | admin | Reenvia o convite de quem ainda não ativou o acesso. O link anterior deixa de valer |
+| `POST /admin/companies/:id/manager` | admin | Indica outro responsável a pedido da empresa. Corpo: `memberId` e `note` (quem pediu e por quê, obrigatório). Fica no histórico |
 
 ## Cursos
 

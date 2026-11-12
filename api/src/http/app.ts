@@ -12,6 +12,7 @@ import { env } from '@/env'
 
 import { errorHandler } from './error-handler'
 import { authPlugin } from './plugins/auth'
+import { adminCompanyRoutes } from './routes/admin-companies'
 import { authRoutes } from './routes/auth'
 import { challengeRoutes } from './routes/challenges'
 import { dashboardRoutes } from './routes/dashboard'
@@ -46,6 +47,7 @@ export function buildApp() {
   app.register(authRoutes)
   app.register(profileRoutes)
   app.register(companyRoutes)
+  app.register(adminCompanyRoutes)
   app.register(pricingRoutes)
   app.register(courseRoutes)
   app.register(learningRoutes)

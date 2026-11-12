@@ -22,7 +22,7 @@ export function AcceptInvitePage() {
   const invite = useQuery({
     queryKey: ['invite', token],
     retry: false,
-    queryFn: async () => (await api.get<{ name: string; email: string; jobTitle: string; companyName: string }>(`/auth/invite/${token}`)).data,
+    queryFn: async () => (await api.get<{ name: string; email: string; jobTitle: string; companyName: string; isManager: boolean }>(`/auth/invite/${token}`)).data,
   })
 
   const accept = useMutation({
@@ -47,7 +47,7 @@ export function AcceptInvitePage() {
       <AuthShell>
         <div>
           <h1 className="text-[28px] leading-tight font-bold">Convite indisponível</h1>
-          <p className="mt-1.5 text-[15px] text-muted-foreground">{getErrorMessage(invite.error, 'Este convite não existe ou já venceu. Peça um novo link ao representante principal da empresa.')}</p>
+          <p className="mt-1.5 text-[15px] text-muted-foreground">{getErrorMessage(invite.error, 'Este convite não existe ou já venceu. Peça um novo link ao Hub+ ou ao responsável pela conta da empresa.')}</p>
         </div>
         <Button asChild>
           <Link to="/login">Ir para o login</Link>
@@ -63,9 +63,10 @@ export function AcceptInvitePage() {
         <span className="grid size-10 place-items-center rounded-lg bg-primary-soft text-primary">
           <Building2 className="size-5" />
         </span>
-        <h1 className="text-[28px] leading-tight font-bold">Entrar na equipe da {data.companyName}</h1>
+        <h1 className="text-[28px] leading-tight font-bold">{data.isManager ? `Ative o acesso da ${data.companyName}` : `Entrar na equipe da ${data.companyName}`}</h1>
         <p className="text-[15px] text-muted-foreground">
-          {data.name}, você foi convidado como <b className="font-semibold text-foreground">{data.jobTitle}</b>. Crie uma senha para acessar o Hub+.
+          {data.name}, você foi indicado como <b className="font-semibold text-foreground">{data.isManager ? 'responsável pela conta' : data.jobTitle}</b>
+          {data.isManager ? ' pela empresa. O Hub+ já cadastrou os dados dela: falta só criar sua senha.' : '. Crie uma senha para acessar o Hub+.'}
         </p>
       </div>
       <form onSubmit={onSubmit} className="space-y-4">

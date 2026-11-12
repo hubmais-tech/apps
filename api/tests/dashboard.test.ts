@@ -5,7 +5,7 @@ import { users } from '@/database/schema'
 import { computeStreak } from '@/http/routes/dashboard'
 import { hashPassword } from '@/utils/password'
 
-import { app, call, createPublishedCourse, enroll, generateCnpj, openWallet, password, register, run, type Session } from './helpers'
+import { app, call, createCompany, createOrphanCompanyAccount, createPublishedCourse, enroll, openWallet, password, register, run, type Session } from './helpers'
 
 describe('sequência de estudo', () => {
   const days = (...list: string[]) => new Set(list)
@@ -33,6 +33,7 @@ describe('painéis', () => {
   let mentor: Session
   let student: Session
   let company: Session
+  let orphanCompany: Session
   let admin: Session
   let courseId: string
   let lessonId: string
@@ -41,7 +42,6 @@ describe('painéis', () => {
     await app.ready()
     mentor = await register('mentor', 'pn-mentor')
     student = await register('student', 'pn-aluno')
-    company = await register('company', 'pn-empresa')
     expect((await openWallet(mentor)).statusCode).toBe(201)
 
     const course = await createPublishedCourse(mentor, 'Curso do painel', 10000)
@@ -52,6 +52,8 @@ describe('painéis', () => {
     const [row] = await database.insert(users).values({ name: 'Admin painel', email: adminEmail, role: 'admin', passwordHash: await hashPassword(password) }).returning()
     const login = await app.inject({ method: 'POST', url: '/auth/login', payload: { email: adminEmail, password } })
     admin = { token: login.json().token, id: row!.id }
+    company = (await createCompany(admin, 'pn-empresa', { tradeName: 'Painel Co' })).session
+    orphanCompany = await createOrphanCompanyAccount('pn-orfa')
   })
 
   afterAll(async () => {
@@ -112,18 +114,8 @@ describe('painéis', () => {
     expect(dash.recentSales[0]).toMatchObject({ courseTitle: 'Curso do painel', amountInCents: 8000 })
   })
 
-  it('painel da empresa: precisa do cadastro e conta convites por estado', async () => {
-    expect((await call(company, 'GET', '/company/overview')).statusCode).toBe(403)
-    await call(company, 'POST', '/company', {
-      cnpj: generateCnpj(),
-      legalName: 'Empresa do Painel LTDA',
-      tradeName: 'Painel Co',
-      sector: 'Tecnologia',
-      size: 'micro',
-      city: 'Aracaju',
-      state: 'SE',
-      representative: { jobTitle: 'Sócio', phone: '79988887777' },
-    })
+  it('painel da empresa: precisa de empresa vinculada e conta convites por estado', async () => {
+    expect((await call(orphanCompany, 'GET', '/company/overview')).statusCode).toBe(403)
     const overview = (await call(company, 'GET', '/company/overview')).json()
     expect(overview.invitations).toEqual({ sent: 0, accepted: 0, declined: 0, hired: 0 })
     expect(typeof overview.talentsAvailable).toBe('number')

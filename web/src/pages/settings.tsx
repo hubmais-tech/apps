@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Copy, KeyRound, Link2, Mail, Plus, RefreshCw, Trash2, UserPlus } from 'lucide-react'
+import { Check, Copy, Crown, KeyRound, Link2, Mail, Plus, RefreshCw, Trash2, UserPlus } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -306,7 +306,10 @@ function CompanyData({ company }: { company: Company }) {
   const set = (key: keyof typeof form, value: string) => setForm({ ...form, [key]: value })
 
   const save = useMutation({
-    mutationFn: () => api.patch('/company', { ...form, website: form.website || null, about: form.about || null }),
+    mutationFn: () => {
+      const { legalName: _legalName, ...editable } = form
+      return api.patch('/company', { ...editable, website: form.website || null, about: form.about || null })
+    },
     onSuccess: () => {
       toast.success('Dados da empresa atualizados.')
       queryClient.invalidateQueries({ queryKey: ['company'] })
@@ -327,11 +330,11 @@ function CompanyData({ company }: { company: Company }) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="CNPJ" htmlFor="c-cnpj" hint="O CNPJ não pode ser alterado.">
+            <Field label="CNPJ" htmlFor="c-cnpj" hint="Só o Hub+ altera o CNPJ e a razão social. Se algo estiver errado, fale com o Hub+.">
               <Input id="c-cnpj" value={maskCnpj(company.cnpj)} readOnly />
             </Field>
             <Field label="Razão social" htmlFor="c-legal">
-              <Input id="c-legal" value={form.legalName} onChange={(e) => set('legalName', e.target.value)} />
+              <Input id="c-legal" value={form.legalName} readOnly />
             </Field>
             <Field label="Nome fantasia" htmlFor="c-trade">
               <Input id="c-trade" value={form.tradeName} onChange={(e) => set('tradeName', e.target.value)} />
@@ -394,6 +397,7 @@ function CompanyTeam({ company }: { company: Company }) {
   const [form, setForm] = useState({ name: '', jobTitle: '', email: '', phone: '' })
   const [invite, setInvite] = useState<{ memberId: string; url: string } | null>(null)
   const [copied, setCopied] = useState(false)
+  const [handing, setHanding] = useState<string | null>(null)
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['company'] })
 
@@ -415,6 +419,17 @@ function CompanyTeam({ company }: { company: Company }) {
     onSuccess: (data) => {
       setInvite(data)
       toast.success('Novo link gerado. O anterior deixou de valer.')
+      refresh()
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  })
+
+  // D23: a empresa escolhe quem gerencia a conta. Depois da troca, esta pessoa vira representante comum.
+  const handOver = useMutation({
+    mutationFn: (memberId: string) => api.post('/company/manager', { memberId }),
+    onSuccess: () => {
+      setHanding(null)
+      toast.success('Gestão da conta passada. Você agora é representante comum.')
       refresh()
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -466,9 +481,11 @@ function CompanyTeam({ company }: { company: Company }) {
       <Card>
         <CardHeader>
           <CardTitle>Representantes</CardTitle>
-          <Button size="sm" onClick={() => setAdding((v) => !v)}>
-            <UserPlus /> Adicionar
-          </Button>
+          {company.isOwner && (
+            <Button size="sm" onClick={() => setAdding((v) => !v)}>
+              <UserPlus /> Adicionar
+            </Button>
+          )}
         </CardHeader>
 
         {adding && (
@@ -508,7 +525,7 @@ function CompanyTeam({ company }: { company: Company }) {
               </span>
               <div className="min-w-0 flex-1 leading-tight">
                 <p className="flex flex-wrap items-center gap-2 text-[13px] font-semibold">
-                  {member.name} {member.isPrimary && <Badge variant="primary">Principal</Badge>}
+                  {member.name} {member.isPrimary && <Badge variant="primary">Responsável</Badge>}
                 </p>
                 <p className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
                   {member.jobTitle} · <Mail className="size-3" /> {member.email}
@@ -516,7 +533,22 @@ function CompanyTeam({ company }: { company: Company }) {
               </div>
               <Badge variant={memberStatus[member.status].variant}>{memberStatus[member.status].label}</Badge>
               {company.isOwner && !member.isPrimary && (
-                <div className="flex gap-1">
+                <div className="flex items-center gap-1">
+                  {member.status === 'active' &&
+                    (handing === member.id ? (
+                      <>
+                        <Button type="button" size="sm" loading={handOver.isPending} onClick={() => handOver.mutate(member.id)}>
+                          Confirmar troca
+                        </Button>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setHanding(null)}>
+                          Cancelar
+                        </Button>
+                      </>
+                    ) : (
+                      <Button type="button" size="sm" variant="secondary" onClick={() => setHanding(member.id)}>
+                        <Crown /> Tornar responsável
+                      </Button>
+                    ))}
                   {member.status !== 'active' && (
                     <Button type="button" variant="ghost" size="icon" className="size-8" aria-label={`Gerar novo convite para ${member.name}`} onClick={() => reissue.mutate(member.id)}>
                       <RefreshCw />
@@ -530,7 +562,11 @@ function CompanyTeam({ company }: { company: Company }) {
             </li>
           ))}
         </ul>
-        {!company.isOwner && <p className="border-t border-border px-[18px] py-3 text-xs text-muted-foreground">Só o representante principal adiciona ou remove representantes.</p>}
+        {company.isOwner ? (
+          <p className="border-t border-border px-[18px] py-3 text-xs text-muted-foreground">Você é o responsável pela conta. Para passar a gestão a outra pessoa, ela precisa ter ativado o acesso. Se você sair da empresa, avise o Hub+.</p>
+        ) : (
+          <p className="border-t border-border px-[18px] py-3 text-xs text-muted-foreground">Só o responsável pela conta adiciona, remove ou troca representantes.</p>
+        )}
       </Card>
     </div>
   )

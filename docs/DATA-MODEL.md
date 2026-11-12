@@ -14,7 +14,8 @@ Regras gerais:
 ```
 users ─┬─ student_profiles        (1:1, aluno)
        ├─ mentor_accounts         (1:1, mentor com carteira aberta)
-       ├─ company_members ── companies   (representantes de uma empresa)
+       ├─ company_members ── companies   (representantes de uma empresa; um é o responsável)
+       │                    └─ company_manager_changes
        ├─ courses ─ modules ─ lessons
        │     ├─ enrollments ── lesson_progress
        │     ├─ challenges ─ submissions ─ portfolio_items
@@ -30,8 +31,9 @@ users ─┬─ student_profiles        (1:1, aluno)
 | `users` | Toda conta de acesso | `role`: `student`, `mentor`, `company`, `admin`. E-mail único, senha com hash scrypt |
 | `student_profiles` | Perfil opcional do aluno (D12) | Chave = `user_id`. Sem CPF. `interests` é lista de texto. `talent_visible` liga o Banco de Talentos (exige projeto validado, D18). `onboarding_completed_at` ou `onboarding_skipped_at` encerram o onboarding |
 | `mentor_accounts` | A "carteira aberta" do mentor (D13) | Chave = `user_id`. `cpf` (só dígitos, único), `pix_key_type`, `pix_key`, `full_name`, `birth_date`, `phone`, `bio`, `expertise`. Existir uma linha aqui é o que libera criar cursos e ver a carteira |
-| `companies` | Empresa cadastrada (D14) | `cnpj` único (só dígitos). Não muda depois de criado |
-| `company_members` | Representantes da empresa | `user_id` fica nulo até a pessoa aceitar o convite. `is_primary` marca o principal. `invite_token_hash` guarda só o hash do link (o link em si nunca é salvo). `invite_expires_at` limita a 7 dias. Único por (`company_id`, `email`) |
+| `companies` | Empresa, cadastrada pelo Hub+ (D14, D23) | `cnpj` único (só dígitos). Não muda depois de criado. `created_by_user_id` é o admin que cadastrou (nulo nas empresas antigas) |
+| `company_members` | Representantes da empresa | `user_id` fica nulo até a pessoa aceitar o convite. `is_primary` marca o **responsável pela conta** (um por empresa, D23). `invite_token_hash` guarda só o hash do link (o link em si nunca é salvo). `invite_expires_at` limita a 7 dias. Único por (`company_id`, `email`) |
+| `company_manager_changes` | Histórico de troca do responsável (D23) | `from_member_id` e `to_member_id`, `changed_by_user_id`, `origin` (`company` ou `admin`) e `note` (pedido da empresa, obrigatório quando o admin indica) |
 
 ## Cursos e aprendizado (`courses.ts`)
 

@@ -19,7 +19,7 @@ Status: aprovado em 2026-11-10. MVP (fases 1 a 4) em construção.
 | Rocketseat | Assinatura, formações, "Para Empresas", "Para Escolas" | Formações em sequência e contas de empresa |
 | Udemy | Venda avulsa por curso, divisão de receita com o instrutor, avaliações, perguntas e respostas | Venda por curso com divisão de receita, como no modelo do Hub+ |
 
-Os documentos em `docs/` definem o diferencial do Hub+: trilhas curtas de 4 a 6 semanas, desafios reais, Banco de Talentos e recomendação inteligente. Também definem os planos corporativos Essencial, Avançado e Premium, os selos Bronze, Prata e Ouro, e os relatórios de impacto.
+Os documentos em `docs/` definem o diferencial do Hub+: trilhas curtas de 4 a 6 semanas, desafios reais, Banco de Talentos e recomendação inteligente. Também definem os planos corporativos Essencial, Avançado e Premium, os selos Bronze, Prata e Ouro, e os relatórios de impacto. **Selos e relatórios de impacto ficam para o pós-MVP** (D24).
 
 ## 3. Perfis (CASL)
 
@@ -27,10 +27,10 @@ O repositório `hubmais-tech/api` tem 3 perfis (user, mentor, organization_admin
 
 - **student:** compra cursos, faz desafios, mantém o portfólio e participa do Banco de Talentos.
 - **mentor:** cria e publica cursos, corrige desafios, vê a carteira e saca a receita.
-- **company:** busca talentos, contrata e assina um plano.
-- **admin:** curadoria, relatórios de impacto, doações e selos, carteira do Hub+.
+- **company:** busca talentos, contrata e assina um plano. **A conta é cadastrada pelo Hub+**, com cadastro único por CNPJ, e a empresa escolhe quem a gerencia (D23).
+- **admin:** curadoria, cadastro de empresas, doações, carteira do Hub+. Relatórios de impacto e selos são pós-MVP (D24).
 
-Patrocinadores não têm perfil. Doam diretamente ao Hub+ e recebem selo e relatório, emitidos pelo admin.
+Patrocinadores não têm perfil. Doam diretamente ao Hub+. O selo e o relatório de impacto para doadores ficam para o pós-MVP.
 
 ## 4. Módulos do produto
 
@@ -41,9 +41,11 @@ Patrocinadores não têm perfil. Doam diretamente ao Hub+ e recebem selo e relat
 3. Compra e carteira: gateway atrás de uma interface (Stripe, ver `DECISIONS.md`, D4) e carteira com ledger interno, estilo Kiwify, com saldo pendente, disponível e saque por Pix. A divisão de receita é feita na compra.
 4. Aluno: progresso por aula, desafios com entrega e feedback do mentor, certificado.
 5. Portfólio e Banco de Talentos: perfil público do aluno com projetos validados.
-6. Empresas: cadastro, busca com filtros e contratação.
+6. Empresas: cadastro feito pelo Hub+ (D23), busca com filtros e contratação.
 
-**Fase 2 (depois do MVP):** planos corporativos com selos, registro de doações de empresas com selo e relatório (sem perfil de patrocinador), carteira do Hub+ no perfil admin, relatórios de impacto, período de experiência gratuito e recomendação inteligente.
+**Fase 2 (depois do MVP):** planos corporativos, registro de doações de empresas (sem perfil de patrocinador), carteira do Hub+ no perfil admin, período de experiência gratuito e recomendação inteligente.
+
+**Pós-MVP (versões futuras, D24):** relatório de impacto e selos (de empresas e de doadores).
 
 ## 5. Backend (`api/`)
 
@@ -84,7 +86,7 @@ Situação em 2026-11-10.
 | 4 | Compra, carteira e matrícula (Stripe em modo de teste) | Concluída. Stripe real e R2 real ainda sem teste com chaves |
 | 5 | Aluno: progresso, desafios, certificado | Concluída (D16, D19) |
 | 6 | Portfólio, Banco de Talentos e área da empresa | Concluída, sem planos e sem taxa de contratação (A10, A12) |
-| — | Onboarding por perfil, carteira do mentor com CPF e Pix, empresa com CNPJ e representantes | Concluída (D12, D13, D14) |
+| — | Onboarding por perfil, carteira do mentor com CPF e Pix, empresa com CNPJ e representantes | Concluída (D12, D13, D14). O autocadastro de empresa foi trocado pelo **cadastro feito pelo Hub+** (D23), também concluído |
 | 7 | Fase 2 (ver abaixo) | **Não iniciada** |
 
 ### Fase 2: pendências de produto
@@ -93,13 +95,19 @@ O detalhamento em épicos e histórias, com estimativas e plano de sprints, est�
 
 Dependem de decisões do responsável (ver "Decisões abertas" em `DECISIONS.md`):
 
-- **Planos corporativos e selos** (Essencial, Avançado, Premium; Bronze, Prata, Ouro): limites e preços em A10.
-- **Doações de empresas** com selo e relatório de impacto, sem perfil de patrocinador: forma de recebimento em A8.
+- **Convite por e-mail** do responsável e dos representantes da empresa: hoje o admin e o responsável copiam o link da tela (A11). O cadastro de empresas pelo Hub+ (D23) já está pronto.
+- **Planos corporativos** (Essencial, Avançado, Premium): limites e preços em A10. Os selos (Bronze, Prata, Ouro) são pós-MVP.
+- **Doações de empresas**, sem perfil de patrocinador: forma de recebimento em A8. Selo e relatório de impacto para doadores são pós-MVP.
 - **Taxa de intermediação** sobre contratações: percentual e cobrança em A12.
 - **E-mail transacional** (convites de representantes, recuperação de senha, avisos): provedor em A11.
 - **Verificação de identidade** do mentor e antifraude de saque: A13.
 - **Período de experiência gratuito** e **recomendação inteligente** de cursos e talentos.
 - **Stripe real** (A9) e **logo em alta resolução** (A6).
+
+### Pós-MVP (D24)
+
+- **Relatório de impacto** (painel do admin, PDF e relatório para doadores).
+- **Selos** das empresas (Bronze, Prata, Ouro) e dos doadores ("Apoiador da Juventude").
 
 ### Ideias que não entraram
 
@@ -110,7 +118,7 @@ Dependem de decisões do responsável (ver "Decisões abertas" em `DECISIONS.md`
 
 ## 9. Documentação
 
-- `DECISIONS.md`: decisões tomadas (D1 a D22) e pendentes (A6 a A14).
+- `DECISIONS.md`: decisões tomadas (D1 a D24) e pendentes (A6 a A14).
 - `FLOWS.md`: fluxos de cada perfil, do cadastro ao resultado.
 - `API.md`: referência das rotas.
 - `DATA-MODEL.md`: tabelas e regras de dados.

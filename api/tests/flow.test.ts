@@ -8,7 +8,7 @@ import { database, sql as pg } from '@/database/connection'
 import { ledgerEntries, users } from '@/database/schema'
 import { hashPassword } from '@/utils/password'
 
-import { app, call, openWallet, password, register, run, type Session } from './helpers'
+import { app, call, createCompany, openWallet, password, register, run, type Session } from './helpers'
 
 describe('fluxo do MVP', () => {
   let mentor: Session
@@ -28,8 +28,6 @@ describe('fluxo do MVP', () => {
     expect((await openWallet(mentor)).statusCode).toBe(201)
     expect((await openWallet(otherMentor)).statusCode).toBe(201)
     student = await register('student', 'aluno')
-    company = await register('company', 'empresa')
-
     const adminEmail = `admin-${run}@teste.local`
     const [row] = await database
       .insert(users)
@@ -41,6 +39,7 @@ describe('fluxo do MVP', () => {
       payload: { email: adminEmail, password },
     })
     admin = { token: login.json().token, id: row.id }
+    company = (await createCompany(admin, 'empresa')).session
   })
 
   afterAll(async () => {
@@ -48,7 +47,15 @@ describe('fluxo do MVP', () => {
     await pg.end()
   })
 
-  it('não permite cadastro como admin', async () => {
+  it('não permite cadastro como admin nem como empresa (D23)', async () => {
+    const asCompany = await app.inject({
+      method: 'POST',
+      url: '/auth/register',
+      payload: { name: 'Empresa Sozinha', email: `sozinha-${run}@teste.local`, password, role: 'company' },
+    })
+    expect(asCompany.statusCode).toBe(400)
+    expect((await call(null, 'POST', '/auth/login', { email: `sozinha-${run}@teste.local`, password })).statusCode).toBe(401)
+
     const response = await app.inject({
       method: 'POST',
       url: '/auth/register',

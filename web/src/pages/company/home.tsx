@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, Briefcase, CheckCircle2, Clock, Handshake, Search, Users } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { EmptyState, ErrorState, Loading, Stat } from '@/components/query-state'
@@ -7,6 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { api, type Company } from '@/lib/api'
+import { maskCnpj } from '@/lib/masks'
+import { companySizes } from '@/lib/options'
 import { initialsOf, invitationStatusMeta, toneFor, type CompanyInvitation, type CompanyOverview } from '@/lib/types-company'
 import { cn, formatDate } from '@/lib/utils'
 
@@ -15,6 +18,68 @@ const memberStatus = {
   pending: { label: 'Convite enviado', variant: 'accent' },
   expired: { label: 'Convite vencido', variant: 'destructive' },
 } as const
+
+/** Guarda no navegador que o responsável já conferiu os dados cadastrados pelo Hub+ (D23). */
+const checkedKey = (companyId: string) => `hubmais:company-checked:${companyId}`
+function wasChecked(companyId: string) {
+  try {
+    return localStorage.getItem(checkedKey(companyId)) === '1'
+  } catch {
+    return false
+  }
+}
+
+/** Primeiro acesso: o Hub+ cadastrou a empresa, e o responsável confere os dados em vez de preenchê-los (D23). */
+function ConferCompanyData({ company }: { company: Company }) {
+  const [done, setDone] = useState(() => wasChecked(company.id))
+  if (done || !company.isOwner) return null
+
+  function confirm() {
+    try {
+      localStorage.setItem(checkedKey(company.id), '1')
+    } catch {
+      // Sem armazenamento, o cartão só some até a próxima visita.
+    }
+    setDone(true)
+  }
+
+  const items = [
+    ['CNPJ', maskCnpj(company.cnpj)],
+    ['Razão social', company.legalName],
+    ['Nome fantasia', company.tradeName],
+    ['Setor e porte', `${company.sector} · ${companySizes.find((s) => s.value === company.size)?.label ?? ''}`],
+    ['Local', `${company.city}/${company.state}`],
+  ] as const
+
+  return (
+    <Card className="border-primary lg:col-span-12">
+      <CardHeader>
+        <CardTitle>Confira os dados da sua empresa</CardTitle>
+      </CardHeader>
+      <div className="space-y-4 p-[18px] pt-0">
+        <p className="text-[13px] text-muted-foreground">
+          O Hub+ cadastrou a {company.tradeName} e você é o responsável pela conta. Se o CNPJ ou a razão social estiverem errados, fale com o Hub+ para corrigir. Os demais dados você edita em Configurações.
+        </p>
+        <dl className="grid gap-x-6 gap-y-2 text-[13px] sm:grid-cols-2">
+          {items.map(([label, value]) => (
+            <div key={label}>
+              <dt className="text-xs font-semibold text-muted-foreground uppercase">{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="flex flex-wrap gap-2.5">
+          <Button onClick={confirm}>
+            <CheckCircle2 /> Está tudo certo
+          </Button>
+          <Button asChild variant="secondary">
+            <Link to="/settings?tab=team">Convidar a equipe</Link>
+          </Button>
+        </div>
+      </div>
+    </Card>
+  )
+}
 
 /** Painel da empresa, exibido em "/" para o perfil empresa. */
 export function CompanyDashboard() {
@@ -44,6 +109,7 @@ export function CompanyDashboard() {
 
   return (
     <div className="grid gap-5 lg:grid-cols-12">
+      <ConferCompanyData company={company.data} />
       <div className="flex flex-wrap items-end justify-between gap-3 lg:col-span-12">
         <div>
           <h1 className="text-2xl font-bold">{tradeName}</h1>
@@ -128,7 +194,7 @@ export function CompanyDashboard() {
                   <b className="block truncate text-[13px] font-semibold">{member.name}</b>
                   <span className="block truncate text-xs text-muted-foreground">{member.jobTitle}</span>
                 </span>
-                <Badge variant={member.isPrimary ? 'primary' : memberStatus[member.status].variant}>{member.isPrimary ? 'Principal' : memberStatus[member.status].label}</Badge>
+                <Badge variant={member.isPrimary ? 'primary' : memberStatus[member.status].variant}>{member.isPrimary ? 'Responsável' : memberStatus[member.status].label}</Badge>
               </li>
             ))}
           </ul>

@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { sql as pg } from '@/database/connection'
 
-import { app, call, createPublishedCourse, enroll, generateCnpj, openWallet, register, type Session } from './helpers'
+import { app, call, createAdmin, createCompany, createOrphanCompanyAccount, createPublishedCourse, enroll, openWallet, register, type Session } from './helpers'
 
 describe('desafios, certificado, portfólio e Banco de Talentos', () => {
   let mentor: Session
@@ -10,6 +10,7 @@ describe('desafios, certificado, portfólio e Banco de Talentos', () => {
   let student: Session
   let outsider: Session
   let company: Session
+  let orphanCompany: Session
   let courseId: string
   let slug: string
   let lessonId: string
@@ -26,7 +27,8 @@ describe('desafios, certificado, portfólio e Banco de Talentos', () => {
     otherMentor = await register('mentor', 'en-mentor2')
     student = await register('student', 'en-aluno')
     outsider = await register('student', 'en-fora')
-    company = await register('company', 'en-empresa')
+    company = (await createCompany(await createAdmin('en-admin'), 'en-empresa', { legalName: 'Empresa de Busca LTDA', tradeName: 'Busca Talentos' })).session
+    orphanCompany = await createOrphanCompanyAccount('en-orfa')
     expect((await openWallet(mentor)).statusCode).toBe(201)
     expect((await openWallet(otherMentor)).statusCode).toBe(201)
 
@@ -219,25 +221,13 @@ describe('desafios, certificado, portfólio e Banco de Talentos', () => {
   })
 
   describe('Banco de Talentos e convites (D18)', () => {
-    it('empresa sem cadastro, aluno e mentor não acessam', async () => {
-      expect((await talentSearch(company)).statusCode).toBe(403)
+    it('conta de empresa sem empresa vinculada, aluno e mentor não acessam', async () => {
+      expect((await talentSearch(orphanCompany)).statusCode).toBe(403)
       expect((await talentSearch(student)).statusCode).toBe(403)
       expect((await talentSearch(mentor)).statusCode).toBe(403)
     })
 
-    it('empresa cadastrada busca talentos e vê só nome abreviado', async () => {
-      const created = await call(company, 'POST', '/company', {
-        cnpj: generateCnpj(),
-        legalName: 'Empresa de Busca LTDA',
-        tradeName: 'Busca Talentos',
-        sector: 'Marketing e publicidade',
-        size: 'small',
-        city: 'Aracaju',
-        state: 'SE',
-        representative: { jobTitle: 'RH', phone: '79988887777' },
-      })
-      expect(created.statusCode).toBe(201)
-
+    it('empresa cadastrada pelo Hub+ busca talentos e vê só nome abreviado', async () => {
       await call(student, 'PUT', '/me/student-profile', { city: 'Aracaju', neighborhood: 'Atalaia', interests: ['Social media'], headline: 'Social media e conteúdo', phone: '(79) 99999-0000', bio: 'Gosto de criar conteúdo.' })
 
       const result = (await talentSearch(company)).json()
