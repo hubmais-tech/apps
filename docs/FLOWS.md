@@ -41,7 +41,7 @@ Representante convidado entra por outro caminho: recebe um link `/convite/<token
 7. **Aparece no Banco de Talentos** (D18): só com 1 projeto validado e público, e só se o aluno ligar a opção. Se o último projeto validado for ocultado ou apagado, ele sai da lista.
 8. **Responde convites** (`/invitations`): aceitar libera nome completo e contato para a empresa que convidou.
 
-O painel (`/`) resume tudo com dados reais (D19): horas estimadas, sequência, atividade da semana, desafios pendentes e o caminho até o Banco de Talentos.
+O painel (`/painel`) resume tudo com dados reais (D19): horas estimadas, sequência, atividade da semana, desafios pendentes e o caminho até o Banco de Talentos.
 
 ## 4. Empresa: do cadastro pelo Hub+ à contratação
 
@@ -84,3 +84,10 @@ Reembolso → estorna os dois lançamentos pelos valores originais e revoga a ma
 O mentor vê esse cálculo ao definir o preço do curso (tela "Novo curso" e etapa Informações do construtor).
 
 O percentual do Hub+ (`PLATFORM_FEE_PERCENT`) e a taxa do gateway (`GATEWAY_FEE_PERCENT` e `GATEWAY_FEE_FIXED_IN_CENTS`) vêm do `.env`. A taxa do gateway é uma **estimativa** e ainda não foi verificada na conta do Stripe (A14).
+
+## 7. Visitante: da página inicial ao cadastro (D25)
+
+1. **Abre o site** (`/`): vê a página inicial pública, com ou sem login. Sem login, o cabeçalho mostra "Entrar" e "Criar conta". Com login, mostra "Acessar conta", que leva ao painel (`/painel`).
+2. **Entende a proposta**: como funciona, para mentores e para empresas. O catálogo está em "Explorar cursos" (`/explore`).
+3. **Cria a conta** (`/register`): aluno ou mentor. "Quero ensinar" abre `/register?role=mentor`, já com o perfil escolhido.
+4. **Empresa** não se cadastra: usa "Fale conosco" (e-mail ou Instagram) e o Hub+ cadastra (D23).

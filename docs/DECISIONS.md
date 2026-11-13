@@ -255,6 +255,25 @@ Consequências:
 - O que já existe no código **não é removido**: o selo "Validado por mentor" do portfólio (D17) faz parte do Banco de Talentos e continua. A marcação "contratado" do convite (D18) continua guardando o dado para o relatório futuro.
 - Doações (A8), planos corporativos (A10) e taxa de contratação (A12) **seguem como estavam** (release R3 do backlog, decisões pendentes), apenas sem selo e sem relatório de impacto. Se essas também forem para o pós-MVP, é só dizer.
 
+## D25. Página inicial pública (Decidido, 2026-11-12)
+
+A raiz do site (`/`) é **sempre a página inicial pública**, com ou sem login. Ela não redireciona ninguém. O painel de cada perfil fica em **`/painel`** (o admin cai em `/admin`).
+
+- **Cabeçalho sem login:** "Entrar" e "Criar conta". **Com login:** "Acessar conta", que leva ao painel.
+- **Com login**, a página some com "Criar conta", "Quero ensinar" e a chamada final, e o botão principal do início vira "Acessar minha conta".
+- Login, cadastro, convite, fim do onboarding e perfil sem permissão para a rota levam a `/painel`. A tela de login e a de cadastro (`AuthShell`) **não têm mais depoimento**: o painel lateral mostra o que a plataforma entrega de fato (cursos de 4 a 6 semanas, desafios com projetos validados e certificado, Banco de Talentos).
+
+- **Blocos:** proposta de valor, como funciona (3 passos), para mentores, para empresas, chamada final e rodapé. Protótipo aprovado: `docs/design/mockup-landing.html`.
+- **Sem seção de cursos em destaque** por enquanto, porque o catálogo ainda tem poucos cursos. O catálogo continua em `/explore`, com botão "Explorar cursos" no topo e no início da página. A API não mudou.
+- **Localidade:** a página fala em **Sergipe**, não em "Aracaju e região". O rodapé diz "Formando, conectando e transformando jovens de Sergipe." O nome da plataforma é **Hub+** (não "Hub Juventude+").
+- **Empresas não têm botão de cadastro** (D23): o bloco "Para empresas" tem "Fale conosco" (e-mail) e o Instagram. Contatos provisórios em `web/src/lib/contact.ts`: `hubmaised@gmail.com` e `@hub.mais`. Trocar quando a A15 for decidida.
+- **Mentores:** o botão leva a `/register?role=mentor`, que já abre no passo dos dados com o perfil de mentor escolhido.
+- **Sem números nem promessas inventados:** nada de total de alunos, retenção do Hub+ (A14), preço de plano (A10) ou selos (D24). Os cartões são ilustrações do painel e não levam legenda.
+- **Contraste (4,5:1):** os pares `--success` sobre `--mint-soft` (claro) e `--primary` sobre `--primary-soft` (escuro) davam cerca de 4,3:1. Para texto sobre fundo pastel, a página usa os tokens novos `--success-ink` e `--primary-ink`. O selo de sucesso do restante do app ainda usa o par antigo.
+- **Desempenho:** as telas autenticadas carregam sob demanda (`React.lazy`). O pacote inicial caiu de 700 kB para 383 kB (205 para 119 kB comprimido), e a página inicial, sem os painéis, transfere cerca de 166 kB.
+
+Verificado no Chrome com a página real em 360 px, claro e escuro, 4G simulada (1,6 Mbps, 150 ms) e CPU 4 vezes mais lenta: maior elemento visível em cerca de 2,1 s, sem rolagem horizontal e sem falha de contraste de texto. Medido no build de produção local. Falta repetir no staging, quando a hospedagem (N1) estiver definida.
+
 ## Decisões abertas
 
 | ID | Pergunta | Situação |

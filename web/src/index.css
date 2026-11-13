@@ -36,6 +36,9 @@
   --mint-soft: #ddf3ea;
 
   --success: #15803d;
+  /* Tons de texto para selos pastel: passam de 4,5:1 sobre menta e lilás (o --success puro dá 4,3:1) */
+  --success-ink: #166534;
+  --primary-ink: #5900b0;
   --warning: #b45309;
   --destructive: #b91c1c;
   --video: #120e1a;
@@ -66,6 +69,8 @@
   --mint-soft: rgb(16 185 129 / 0.16);
 
   --success: #4ade80;
+  --success-ink: #4ade80;
+  --primary-ink: #c9aef9;
   --warning: #fbbf24;
   --destructive: #f87171;
   --video: #000000;
@@ -93,6 +98,8 @@
   --color-lilac-soft: var(--lilac-soft);
   --color-mint-soft: var(--mint-soft);
   --color-success: var(--success);
+  --color-success-ink: var(--success-ink);
+  --color-primary-ink: var(--primary-ink);
   --color-warning: var(--warning);
   --color-destructive: var(--destructive);
   --color-video: var(--video);

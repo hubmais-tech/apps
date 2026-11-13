@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { ArrowRight, Building2, GraduationCap, Presentation } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { AuthShell } from '@/components/auth-shell'
@@ -24,8 +24,11 @@ export function RegisterPage() {
   const { user, signIn } = useAuth()
   const navigate = useNavigate()
 
-  const [step, setStep] = useState<1 | 2>(1)
-  const [role, setRole] = useState<SelfRole>('student')
+  // A página inicial leva para /register?role=mentor: o perfil já vem escolhido e a pessoa vai direto aos dados.
+  const [params] = useSearchParams()
+  const requested = roles.find((r) => r.value === params.get('role'))?.value
+  const [step, setStep] = useState<1 | 2>(requested ? 2 : 1)
+  const [role, setRole] = useState<SelfRole>(requested ?? 'student')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -49,7 +52,7 @@ export function RegisterPage() {
   }
 
   // Quem já está logado não precisa se cadastrar de novo. Durante o próprio cadastro, quem navega é o onSuccess.
-  if (user && !register.isPending && !register.isSuccess) return <Navigate to="/" replace />
+  if (user && !register.isPending && !register.isSuccess) return <Navigate to="/painel" replace />
 
   const labels = ['Perfil', 'Seus dados']
 

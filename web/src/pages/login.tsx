@@ -14,7 +14,7 @@ export function LoginPage() {
   const { user, signIn } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as { from?: string } | null)?.from ?? '/'
+  const from = (location.state as { from?: string } | null)?.from ?? '/painel'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -37,7 +37,7 @@ export function LoginPage() {
   }
 
   // Quem já está logado não precisa ver o login. Durante o próprio login, quem navega é o onSuccess.
-  if (user && !login.isPending && !login.isSuccess) return <Navigate to="/" replace />
+  if (user && !login.isPending && !login.isSuccess) return <Navigate to="/painel" replace />
 
   return (
     <AuthShell

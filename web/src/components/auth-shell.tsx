@@ -1,9 +1,16 @@
-import { Clock, Quote } from 'lucide-react'
+import { Award, Briefcase, GraduationCap } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { Logo } from '@/components/logo'
 
-/** Tela dividida: formulário de um lado, prova social do outro (some no celular). */
+/** O que a plataforma entrega de verdade. Nada de depoimento: só funcionalidades que existem. */
+const highlights = [
+  { icon: GraduationCap, title: 'Cursos de 4 a 6 semanas', text: 'Aulas em vídeo criadas por mentores que trabalham na área.' },
+  { icon: Award, title: 'Desafios, projetos e certificado', text: 'O mentor corrige seus trabalhos. O que for aprovado vira projeto validado no seu portfólio.' },
+  { icon: Briefcase, title: 'Banco de Talentos', text: 'Empresas veem seu portfólio e convidam você para vagas. Seu contato só aparece depois que você aceita.' },
+]
+
+/** Tela dividida: formulário de um lado, a proposta do Hub+ do outro (some no celular). */
 export function AuthShell({ children, footer }: { children: React.ReactNode; footer?: React.ReactNode }) {
   return (
     <div className="grid min-h-dvh bg-surface lg:grid-cols-2">
@@ -17,22 +24,29 @@ export function AuthShell({ children, footer }: { children: React.ReactNode; foo
         </div>
       </div>
 
-      <aside className="relative hidden place-items-center overflow-hidden bg-lilac-soft p-10 lg:grid" aria-hidden="true">
-        <span className="absolute top-6 right-6 inline-flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-muted-foreground">
-          <Clock className="size-3.5" /> Cursos de 4 a 6 semanas
-        </span>
-        <div className="relative w-full max-w-[420px] space-y-5">
-          <svg viewBox="0 0 400 260" className="w-full" fill="none">
-            <circle cx="300" cy="70" r="64" fill="var(--primary)" opacity=".16" />
-            <rect x="30" y="120" width="190" height="110" rx="14" fill="var(--primary)" opacity=".2" />
-            <rect x="52" y="52" width="120" height="16" rx="8" fill="var(--orange)" opacity=".4" />
-            <circle cx="320" cy="190" r="34" fill="var(--orange)" opacity=".3" />
+      <aside className="relative hidden place-items-center overflow-hidden bg-lilac-soft p-10 lg:grid">
+        <div className="relative w-full max-w-[420px] space-y-6">
+          <svg viewBox="0 0 400 120" className="w-full" fill="none" aria-hidden="true">
+            <circle cx="320" cy="44" r="44" fill="var(--primary)" opacity=".16" />
+            <rect x="20" y="52" width="170" height="52" rx="12" fill="var(--primary)" opacity=".2" />
+            <rect x="36" y="22" width="110" height="14" rx="7" fill="var(--orange)" opacity=".4" />
           </svg>
-          <figure className="rounded-xl border border-border bg-surface p-5">
-            <Quote className="mb-2 size-5 text-primary" />
-            <blockquote className="text-[15px] leading-relaxed">Aprender com mentores de verdade, no meu ritmo, e ainda sair com um portfólio para mostrar para as empresas.</blockquote>
-            <figcaption className="mt-3 text-xs text-muted-foreground">Hub Juventude+ · Aracaju, Sergipe</figcaption>
-          </figure>
+          <div className="space-y-2.5">
+            <h2 className="text-lg font-bold">Do primeiro curso à primeira entrevista</h2>
+            <ul className="space-y-2.5">
+              {highlights.map(({ icon: Icon, title, text }) => (
+                <li key={title} className="flex gap-3 rounded-xl border border-border bg-surface p-4">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary-ink">
+                    <Icon className="size-[18px]" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 text-[13px] leading-snug">
+                    <b className="block text-sm font-semibold">{title}</b>
+                    <span className="text-muted-foreground">{text}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </aside>
     </div>

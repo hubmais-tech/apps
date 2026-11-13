@@ -1,10 +1,13 @@
 import { Award, BookOpen, Briefcase, Building2, ClipboardCheck, Compass, FolderKanban, Mail, Send, GraduationCap, Home, LogOut, Moon, Receipt, Search, Settings, ShoppingBag, Sun, Users, Wallet } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Suspense, useState, type FormEvent } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
+import { Instagram } from '@/components/icons'
 import { Logo } from '@/components/logo'
+import { Loading } from '@/components/query-state'
 import { Button } from '@/components/ui/button'
 import type { Onboarding, Role } from '@/lib/api'
+import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/contact'
 import { useAuth } from '@/lib/auth'
 import { useTheme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
@@ -19,7 +22,7 @@ const roleLabel: Record<Role, string> = {
 type NavEntry = { to: string; label: string; icon: typeof Wallet; end?: boolean }
 type NavGroup = { title: string; items: NavEntry[] }
 
-const home: NavEntry = { to: '/', label: 'Início', icon: Home, end: true }
+const home: NavEntry = { to: '/painel', label: 'Início', icon: Home, end: true }
 const explore: NavEntry = { to: '/explore', label: 'Explorar cursos', icon: Compass }
 const learning: NavEntry = { to: '/my-learning', label: 'Meus estudos', icon: GraduationCap }
 
@@ -152,7 +155,65 @@ function SidebarLink({ item }: { item: NavEntry }) {
 }
 
 /** Navegação pública: uma barra simples no topo, sem sidebar. */
-function PublicLayout() {
+const navLink = 'rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground'
+
+function PublicFooter() {
+  return (
+    <footer className="border-t border-border bg-surface">
+      <div className="mx-auto grid max-w-[1120px] gap-8 px-4 py-8 sm:grid-cols-[1.4fr_1fr_1fr] sm:px-6">
+        <div>
+          <Link to="/" aria-label="Hub+ início">
+            <Logo />
+          </Link>
+          <p className="mt-3 max-w-xs text-muted-foreground">Formando, conectando e transformando jovens de Sergipe.</p>
+        </div>
+        <div>
+          <h2 className="mb-2.5 text-[13px] font-semibold">Plataforma</h2>
+          <ul className="grid gap-2 text-muted-foreground">
+            <li>
+              <Link to="/explore" className="hover:text-foreground hover:underline">
+                Explorar cursos
+              </Link>
+            </li>
+            <li>
+              <Link to="/register" className="hover:text-foreground hover:underline">
+                Criar conta
+              </Link>
+            </li>
+            <li>
+              <Link to="/login" className="hover:text-foreground hover:underline">
+                Entrar
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2 className="mb-2.5 text-[13px] font-semibold">Fale conosco</h2>
+          <ul className="grid gap-2 text-muted-foreground">
+            <li>
+              <a href={`mailto:${CONTACT_EMAIL}`} className="inline-flex items-center gap-2 break-all hover:text-foreground hover:underline">
+                <Mail className="size-4 shrink-0" /> {CONTACT_EMAIL}
+              </a>
+            </li>
+            <li>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-foreground hover:underline">
+                <Instagram className="size-4 shrink-0" /> {INSTAGRAM_HANDLE}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div className="mx-auto max-w-[1120px] border-t border-border px-4 py-4 text-[13px] text-muted-foreground sm:px-6">© Hub+ · Sergipe</div>
+    </footer>
+  )
+}
+
+/** Cabeçalho e rodapé públicos. A página inicial (/) usa este layout com ou sem login (D25). */
+export function PublicLayout() {
+  const { pathname } = useLocation()
+  const { user, isLoading } = useAuth()
+  // Na página inicial o conteúdo ocupa a largura toda e as seções têm o próprio espaçamento.
+  const landing = pathname === '/'
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur">
@@ -160,25 +221,51 @@ function PublicLayout() {
           <Link to="/" aria-label="Hub+ início">
             <Logo />
           </Link>
-          <nav className="hidden items-center gap-1 sm:flex" aria-label="Principal">
-            <NavLink to="/explore" className={({ isActive }) => cn('rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground', isActive && 'bg-primary-soft text-primary')}>
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Principal">
+            {landing && (
+              <>
+                <a href="#como-funciona" className={navLink}>
+                  Como funciona
+                </a>
+                <a href="#mentores" className={navLink}>
+                  Para mentores
+                </a>
+                <a href="#empresas" className={navLink}>
+                  Para empresas
+                </a>
+              </>
+            )}
+            <NavLink to="/explore" className={({ isActive }) => cn(navLink, isActive && 'bg-primary-soft text-primary')}>
               Explorar cursos
             </NavLink>
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="ghost" asChild className="hidden sm:inline-flex">
-              <Link to="/login">Entrar</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/register">Criar conta</Link>
-            </Button>
+            {/* Enquanto o token salvo é validado, não mostra nenhum dos dois conjuntos para não piscar. */}
+            {!isLoading &&
+              (user ? (
+                <Button asChild>
+                  <Link to="/painel">Acessar conta</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button variant="ghost" asChild className="hidden sm:inline-flex">
+                    <Link to="/login">Entrar</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/register">Criar conta</Link>
+                  </Button>
+                </>
+              ))}
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
-        <Outlet />
+      <main className={landing ? undefined : 'mx-auto max-w-6xl px-4 py-6 sm:py-8'}>
+        <Suspense fallback={<Loading />}>
+          <Outlet />
+        </Suspense>
       </main>
+      <PublicFooter />
     </div>
   )
 }
@@ -192,7 +279,7 @@ function AppLayout() {
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[256px_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-dvh flex-col gap-6 overflow-y-auto border-r border-border bg-surface p-4 lg:flex">
-        <Link to="/" aria-label="Hub+ início" className="px-2 pt-1">
+        <Link to="/painel" aria-label="Hub+ início" className="px-2 pt-1">
           <Logo />
         </Link>
 
@@ -221,7 +308,7 @@ function AppLayout() {
 
       <div className="min-w-0">
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-surface/95 px-4 py-3 backdrop-blur sm:px-6">
-          <Link to="/" aria-label="Hub+ início" className="lg:hidden">
+          <Link to="/painel" aria-label="Hub+ início" className="lg:hidden">
             <Logo withName={false} />
           </Link>
           <SearchBox className="max-w-sm flex-1" />
@@ -232,7 +319,9 @@ function AppLayout() {
         </header>
 
         <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-28 sm:px-6 sm:pt-7 lg:pb-12">
-          <Outlet />
+          <Suspense fallback={<Loading />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
 

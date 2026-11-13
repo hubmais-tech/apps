@@ -30,7 +30,7 @@ export function AcceptInvitePage() {
     onSuccess: async (data) => {
       await signIn(data.token)
       toast.success('Acesso criado. Bem-vindo ao Hub+!')
-      navigate('/', { replace: true })
+      navigate('/painel', { replace: true })
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   })

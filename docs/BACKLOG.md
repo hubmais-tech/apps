@@ -6,9 +6,9 @@ Elaborado em 2026-11-12, com o papel de Scrum Master, a partir do código e dos 
 
 ## 1. Resumo para o Product Owner
 
-- Cada item tem história de usuário, checklist de critérios de aceitação e casos de teste em Dado, Quando e Então (**387 casos de teste no total**).
+- Cada item tem história de usuário, checklist de critérios de aceitação e casos de teste em Dado, Quando e Então (**384 casos de teste no total**).
 - O produto tem as **fases 1 a 6 e o onboarding por perfil prontos** e testados (81 testes na API). O que falta não é "mais funcionalidades": é **colocar em operação com segurança**, **fechar os modelos de receita que dependem de decisões** e **evoluir a experiência**.
-- O backlog tem **15 épicos e 110 itens, somando 626 pontos**. O **go/no-go do piloto fechado** é ao fim da Sprint 5 (152 pontos em 5 sprints de 2 semanas, com a velocidade assumida de 30). O R1 completo tem 196 pontos, cerca de 7 sprints.
+- O backlog tem **15 épicos e 109 itens, somando 618 pontos**. O **go/no-go do piloto fechado** é ao fim da Sprint 5 (152 pontos em 5 sprints de 2 semanas, com a velocidade assumida de 30). O R1 completo tem 196 pontos, cerca de 7 sprints.
 - **14 decisões em aberto** travam itens (seção 9). A maior parte é resolvida por spikes na própria Sprint 1 (hospedagem, e-mail, nota fiscal, menores de 18, Pix no Stripe). **Só a N5, a política de reembolso depois dos 7 dias, não tem spike que a resolva: ela precisa de decisão sua antes da Sprint 2.** As demais ganham uma recomendação na Sprint 1, que você aprova. Os spikes dependem de terceiros (contador, jurídico, provedores), então agende essas conversas antes de a sprint começar.
 - Três riscos críticos de negócio antes de cobrar o primeiro real: **obrigação fiscal** (N4), **reembolso em 7 dias feito pelo aluno** (direito de arrependimento) e **CPF e chave Pix guardados sem criptografia**.
 
@@ -59,6 +59,7 @@ Montei o plano com estas suposições. Se alguma estiver errada, muda o plano.
 | 2026-11-12 | Empresas **não se cadastram sozinhas**: o Hub+ faz o cadastro único e a empresa escolhe quem gerencia a conta (D23) | **Já entregue no código** (antigo épico E15: cadastro pelo admin, ativação por convite, lista de empresas e troca de responsável). Nada disso consta mais neste backlog. Falta só o envio do convite por e-mail, que está em E04-S02 |
 | 2026-11-12 | **Relatório de impacto e selos** ficam para depois do MVP (D24) | Itens movidos para o épico E16, release Pós-MVP: relatório de impacto, selo e transparência do apoiador, coleta de dados de impacto e selos das empresas. Planos, doações e bolsas continuam no R3 |
 
+| 2026-11-12 | **Página inicial pública** (E12-S01) entregue, sem a seção de cursos em destaque (fase inicial, ainda há poucos cursos) | Item removido do backlog. O botão de empresas virou "Fale conosco" (e-mail e Instagram), porque empresa não se cadastra sozinha (D23). Decisão D25 |
 ## 4. Definições de trabalho
 
 ### Definição de Pronto para entrar na sprint (DoR)
@@ -113,19 +114,19 @@ Onde o negócio ainda não decidiu, os casos de teste usam **valores de exemplo*
 | **E09** Doações e bolsas | R3 | P2 Média | 3 | 31 | A8 |
 | **E10** Administração e operação | R2 | P1 Alta | 7 | 42 | A14 |
 | **E11** Qualidade e testes | R1 | P1 Alta | 8 | 54 | — |
-| **E12** Site institucional e crescimento | R2 | P2 Média | 6 | 29 | A6 |
+| **E12** Site institucional e crescimento | R2 | P2 Média | 5 | 21 | A6 |
 | **E13** Fiscal e jurídico | R1 | P0 Crítica | 5 | 28 | N5, N4 |
 | **E16** Relatório de impacto e selos (pós-MVP) | PM | P3 Baixa | 4 | 24 | A10 |
 | **E14** Melhorias e dívida técnica identificadas | R2 | P2 Média | 6 | 18 | — |
 
-Total: **110 itens e 626 pontos**.
+Total: **109 itens e 618 pontos**.
 
 ## 6. Releases e roteiro
 
 | Release | Objetivo | Pontos | Sprints (a 30 pts) |
 |---|---|---|---|
 | **R1 · Piloto fechado** | Colocar uma turma piloto de Aracaju para usar a plataforma de verdade, com pagamento real, dados protegidos e operação sob controle. | 196 | 7 |
-| **R2 · Lançamento público** | Abrir para o público com catálogo rico, comunicação, curadoria e ferramentas de suporte. | 309 | 11 |
+| **R2 · Lançamento público** | Abrir para o público com catálogo rico, comunicação, curadoria e ferramentas de suporte. | 301 | 11 |
 | **R3 · Receita corporativa** | Ligar os modelos de receita que dependem de decisões de negócio: planos, doações, bolsas e taxa de contratação. | 97 | 4 |
 | **Pós-MVP · Versões futuras** | Itens que o responsável do produto decidiu deixar para depois do MVP: relatório de impacto social e selos. | 24 | 1 |
 
@@ -3869,48 +3870,11 @@ Como pessoa que desenvolve ou integra com a API do Hub+, quero uma documentaçã
 
 ### E12 · Site institucional e crescimento
 
-**Release:** R2 · Lançamento público · **Prioridade:** P2 Média · **6 itens, 29 pontos**
+**Release:** R2 · Lançamento público · **Prioridade:** P2 Média · **5 itens, 21 pontos**
 
 **Objetivo:** Quem chega do Instagram entende a proposta, encontra cursos e se cadastra.
 
-**Por que importa:** Hoje o visitante cai direto no catálogo. Não há página de apresentação nem SEO.
-
-#### [P1] Página inicial pública
-
-**Código:** E12-S01 · **Tipo:** Story · **Pontos:** 8 · **Release:** R2
-
-**História de usuário**
-
-Como visitante que chegou pelo Instagram, quero entender o que o Hub+ oferece antes de me cadastrar, para decidir se vale criar uma conta.
-
-**Checklist de critérios de aceitação**
-
-- [ ] A página inicial pública explica a proposta de valor e mostra cursos em destaque, um bloco para mentores e um bloco para empresas.
-- [ ] Visitante sem login que abre a raiz do site vê a página inicial e não o catálogo.
-- [ ] Pessoa logada que abre a raiz do site vai para o painel do seu perfil.
-- [ ] A página carrega em até 3 segundos em celular com conexão 4G simulada e não tem rolagem horizontal em 360 px de largura.
-- [ ] A página funciona nos temas claro e escuro, com texto legível nos dois.
-
-**Casos de teste**
-
-*CT-01 — Visitante vê a página inicial*
-
-- **Dado que** um visitante sem login
-- **Quando** abrir a raiz do site
-- **Então** a página mostra a proposta de valor, ao menos um curso em destaque e os blocos "Para mentores" e "Para empresas", cada um com botão de cadastro.
-
-*CT-02 — Pessoa logada vai ao painel*
-
-- **Dado que** uma aluna logada com onboarding concluído
-- **Quando** abrir a raiz do site
-- **Então** ela é levada ao painel do aluno e a página inicial pública não é exibida.
-
-*CT-03 — Celular e temas*
-
-- **Dado que** um celular com 360 px de largura e conexão 4G simulada
-- **Quando** abrir a página inicial nos temas claro e escuro
-- **Então** o conteúdo carrega em até 3 segundos, não há rolagem horizontal e todo texto mantém contraste mínimo de 4,5 para 1.
-
+**Por que importa:** A página inicial pública já existe (entregue). Falta SEO, analytics, ajuda e o logo em alta resolução.
 
 #### [P1] SEO e compartilhamento das páginas públicas
 

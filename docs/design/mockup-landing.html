@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hub+ | Protótipo da página inicial pública</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap">
+<style>
+  /* Protótipo da página inicial pública (E12-S01). Mesmos tokens do "Hub+ Workspace" (D11). Claro por padrão. */
+  :root {
+    --bg: #F4F3F9;
+    --surface: #FFFFFF;
+    --faint: #F8F7FC;
+    --line: #E6E3EF;
+    --ink: #17141F;
+    --muted: #6E6880;
+    --accent: #5900B0;
+    --accent-hover: #4A0094;
+    --accent-soft: #EFE6FA;
+    --on-accent: #FFFFFF;
+    --orange: #F26303;
+    --orange-soft: #FDE9DC;
+    --sand-soft: #FBEBD7;
+    --lilac-soft: #ECE6F8;
+    --mint-soft: #DDF3EA;
+    --ok: #15803D;
+    --ok-ink: #166534;      /* texto sobre fundo menta, 4,5:1 ou mais */
+    --accent-ink: #5900B0;  /* texto sobre fundo lilás */
+    --r: 12px;
+    --r-sm: 8px;
+    --font-head: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0F0C16; --surface: #17131F; --faint: #1D1828; --line: rgba(255,255,255,.09);
+      --ink: #F2EEF8; --muted: #A49CB8;
+      --accent: #9C66F0; --accent-hover: #AE80F5; --accent-soft: rgba(156,102,240,.16); --on-accent: #0F0C16;
+      --orange-soft: rgba(242,99,3,.18); --sand-soft: rgba(243,204,159,.14); --lilac-soft: rgba(156,102,240,.14); --mint-soft: rgba(16,185,129,.16);
+      --ok: #4ADE80; --ok-ink: #4ADE80; --accent-ink: #C9AEF9;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0F0C16; --surface: #17131F; --faint: #1D1828; --line: rgba(255,255,255,.09);
+    --ink: #F2EEF8; --muted: #A49CB8;
+    --accent: #9C66F0; --accent-hover: #AE80F5; --accent-soft: rgba(156,102,240,.16); --on-accent: #0F0C16;
+    --orange-soft: rgba(242,99,3,.18); --sand-soft: rgba(243,204,159,.14); --lilac-soft: rgba(156,102,240,.14); --mint-soft: rgba(16,185,129,.16);
+    --ok: #4ADE80; --ok-ink: #4ADE80; --accent-ink: #C9AEF9;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-body); -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { font-family: var(--font-head); margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+  p { margin: 0; text-wrap: pretty; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .muted { color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+
+  /* ---- Barra do protótipo (não faz parte da página) ---- */
+  .mockbar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; background: #17141F; color: #F4F3F9; padding: 8px 16px; font-size: 12px; }
+  .mockbar strong { font-weight: 600; }
+  .seg { display: inline-flex; background: rgba(255,255,255,.12); border-radius: 8px; padding: 2px; gap: 2px; }
+  .seg button { border: 0; background: transparent; color: inherit; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .seg button[aria-pressed="true"] { background: #F4F3F9; color: #17141F; }
+  .mockbar .grow { flex: 1; }
+
+  /* ---- Palco: o conteúdo responde à largura do palco, não da janela ---- */
+  .stage { container-type: inline-size; margin-inline: auto; width: 100%; background: var(--bg); transition: width .2s; }
+  .stage[data-w="360"] { width: 360px; box-shadow: 0 0 0 1px var(--line); }
+  .stage[data-w="768"] { width: 768px; max-width: 100%; box-shadow: 0 0 0 1px var(--line); }
+
+  .wrap { width: 100%; max-width: 1120px; margin-inline: auto; padding-inline: 16px; }
+  section { scroll-margin-top: 72px; }
+
+  /* ---- Botões: retangulares, raio de 8px ---- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--r-sm); border: 1px solid transparent; font-weight: 600; font-size: 14px; text-decoration: none; white-space: nowrap; }
+  .btn.primary { background: var(--accent); color: var(--on-accent); }
+  .btn.primary:hover { background: var(--accent-hover); }
+  .btn.secondary { background: var(--surface); border-color: var(--line); color: var(--ink); }
+  .btn.secondary:hover { background: var(--faint); }
+  .btn.ghost { color: var(--ink); height: 38px; padding: 0 12px; }
+  .btn.ghost:hover { background: var(--faint); }
+  .btn.sm { height: 38px; padding: 0 14px; }
+
+  /* ---- Cabeçalho (o mesmo do PublicLayout) ---- */
+  .head { position: sticky; top: 38px; z-index: 40; background: color-mix(in srgb, var(--surface) 95%, transparent); border-bottom: 1px solid var(--line); backdrop-filter: blur(8px); }
+  .head .wrap { display: flex; align-items: center; gap: 12px; height: 56px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+  .brand img { width: 32px; height: 32px; border-radius: 8px; }
+  .brand b { font: 700 17px var(--font-head); }
+  .nav { display: none; gap: 2px; margin-left: 8px; }
+  .nav a { padding: 6px 12px; border-radius: 6px; color: var(--muted); font-weight: 500; text-decoration: none; }
+  .nav a:hover { color: var(--ink); background: var(--faint); }
+  .head .end { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .head .login { display: none; }
+  .iconbtn { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); }
+
+  /* ---- Hero ---- */
+  .hero { padding-block: 36px 40px; }
+  .hero .wrap { display: grid; gap: 32px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--accent-ink); background: var(--accent-soft); border-radius: 6px; padding: 5px 10px; }
+  .hero h1 { font-size: clamp(30px, 8.5cqi, 52px); line-height: 1.08; font-weight: 800; margin-top: 16px; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero .lead { font-size: 16px; color: var(--muted); margin-top: 16px; max-width: 520px; }
+  .cta { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+  .hero .note { font-size: 13px; color: var(--muted); margin-top: 14px; }
+
+  /* Ilustração do produto: cartões do próprio painel */
+  .art { position: relative; display: grid; gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; }
+  .card h3 { font-size: 14px; font-weight: 600; }
+  .row { display: flex; align-items: center; gap: 12px; }
+  .chip { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; flex: none; }
+  .chip.lilac { background: var(--lilac-soft); color: var(--accent-ink); }
+  .chip.orange { background: var(--orange-soft); color: var(--orange); }
+  .chip.mint { background: var(--mint-soft); color: var(--ok); }
+  .chip.sand { background: var(--sand-soft); color: var(--ink); }
+  .tag { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: var(--mint-soft); color: var(--ok-ink); }
+  .tag.lilac { background: var(--accent-soft); color: var(--accent-ink); }
+  .bar { height: 8px; border-radius: 99px; background: var(--faint); border: 1px solid var(--line); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--orange); border-radius: 99px; }
+  .small { font-size: 12px; }
+  .caption { font-size: 12px; color: var(--muted); text-align: center; margin-top: 2px; }
+  .art .offset { margin-left: 0; }
+
+  /* ---- Seções ---- */
+  .block { padding-block: 48px; }
+  .block.alt { background: var(--surface); border-block: 1px solid var(--line); }
+  .kicker { font-size: 13px; font-weight: 600; color: var(--accent); }
+  .block h2 { font-size: clamp(24px, 6.4cqi, 36px); line-height: 1.15; font-weight: 800; margin-top: 8px; }
+  .block .sub { font-size: 16px; color: var(--muted); margin-top: 12px; max-width: 560px; }
+
+  .steps { display: grid; gap: 14px; margin-top: 28px; }
+  .step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; }
+  .step .n { font: 700 13px var(--font-head); color: var(--muted); }
+  .step h3 { font-size: 17px; font-weight: 700; margin-top: 14px; }
+  .step p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+
+  .split { display: grid; gap: 28px; align-items: center; }
+  .list { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 12px; }
+  .list li { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
+  .list svg { color: var(--ok); margin-top: 2px; }
+  .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 26px; }
+  .fine { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+  /* ---- Chamada final e rodapé ---- */
+  .final { padding-block: 8px 56px; }
+  .final .box { background: var(--accent); color: var(--on-accent); border-radius: 16px; padding: 32px 22px; display: grid; gap: 18px; }
+  .final h2 { font-size: clamp(24px, 6.4cqi, 34px); font-weight: 800; line-height: 1.15; margin: 0; }
+  .final p { opacity: .92; font-size: 16px; margin-top: 8px; }
+  .final .btn { background: var(--surface); color: var(--accent); }
+  .foot { border-top: 1px solid var(--line); background: var(--surface); padding-block: 32px; }
+  .foot .wrap { display: grid; gap: 24px; }
+  .foot h3 { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .foot a { color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+  .foot a:hover { color: var(--ink); text-decoration: underline; }
+  .foot .copy { border-top: 1px solid var(--line); padding-top: 18px; font-size: 13px; color: var(--muted); }
+
+  /* ---- Tablet e desktop (medido pela largura do palco) ---- */
+  @container (min-width: 640px) {
+    .wrap { padding-inline: 24px; }
+    .cta { flex-direction: row; }
+    .steps { grid-template-columns: repeat(3, 1fr); }
+    .actions { flex-direction: row; flex-wrap: wrap; }
+    .nav { display: flex; }
+    .head .login { display: inline-flex; }
+    .foot .wrap { grid-template-columns: 1.4fr 1fr 1fr; }
+    .final .box { grid-template-columns: 1fr auto; align-items: center; padding: 40px; }
+  }
+  @container (min-width: 900px) {
+    .hero { padding-block: 72px 80px; }
+    .hero .wrap { grid-template-columns: 1.05fr .95fr; align-items: center; gap: 56px; }
+    .block { padding-block: 80px; }
+    .split { grid-template-columns: 1fr 1fr; gap: 64px; }
+    .split.flip .copy { order: 2; }
+    .art .offset { margin-left: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2.5 9 2.5 12 0v-5"/></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 8 5-3 5 3-1.5-8"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3"/><path d="M21 9H6a3 3 0 0 0-3 3"/><circle cx="17" cy="14" r="1"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+  <symbol id="i-insta" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+</svg>
+
+<div class="mockbar">
+  <strong>Protótipo · Página inicial pública (E12-S01)</strong>
+  <span class="seg" role="group" aria-label="Tema">
+    <button data-theme-set="light" aria-pressed="true">Claro</button>
+    <button data-theme-set="dark" aria-pressed="false">Escuro</button>
+  </span>
+  <span class="seg" role="group" aria-label="Largura da tela">
+    <button data-w-set="360" aria-pressed="false">Celular 360</button>
+    <button data-w-set="768" aria-pressed="false">Tablet 768</button>
+    <button data-w-set="full" aria-pressed="true">Desktop</button>
+  </span>
+  <span class="grow"></span>
+  <span>Textos e ilustrações são exemplos para revisão.</span>
+</div>
+
+<div class="stage" id="stage" data-w="full">
+
+  <header class="head">
+    <div class="wrap">
+      <a class="brand" href="#topo" aria-label="Hub+ início"><img src="../images/logo-hubmais-instagram.jpg" alt="" width="32" height="32"><b>Hub+</b></a>
+      <nav class="nav" aria-label="Principal">
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#mentores">Para mentores</a>
+        <a href="#empresas">Para empresas</a>
+        <a href="#">Explorar cursos</a>
+      </nav>
+      <div class="end">
+        <button class="iconbtn" aria-label="Alternar tema" data-theme-toggle><svg class="i"><use href="#i-moon"/></svg></button>
+        <a class="btn ghost login" href="#">Entrar</a>
+        <a class="btn primary sm" href="#">Criar conta</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="topo">
+
+    <!-- 1. Proposta de valor -->
+    <section class="hero" aria-labelledby="h-hero">
+      <div class="wrap">
+        <div>
+          <span class="eyebrow">Jovens de 18 a 26 anos · Sergipe</span>
+          <h1 id="h-hero">Aprenda em <em>4 a 6 semanas</em> e mostre seu trabalho para quem contrata.</h1>
+          <p class="lead">Cursos curtos com mentores de verdade, desafios práticos e certificado. Seus melhores projetos ficam num portfólio e as empresas da região podem convidar você para uma vaga.</p>
+          <div class="cta">
+            <a class="btn primary" href="#">Criar conta <svg class="i"><use href="#i-arrow"/></svg></a>
+            <a class="btn secondary" href="#">Explorar cursos</a>
+          </div>
+          <p class="note">Criar a conta não custa nada. Você só paga pelos cursos que escolher.</p>
+        </div>
+
+        <div>
+          <div class="art" aria-hidden="true">
+            <div class="card">
+              <div class="row">
+                <span class="chip lilac"><svg class="i"><use href="#i-cap"/></svg></span>
+                <div style="min-width:0;flex:1">
+                  <h3>Social media para pequenos negócios</h3>
+                  <p class="muted small">Semana 3 de 5 · 12 de 20 aulas</p>
+                </div>
+              </div>
+              <div class="bar" style="margin-top:14px"><i style="width:60%"></i></div>
+            </div>
+            <div class="card offset">
+              <div class="row">
+                <span class="chip sand"><svg class="i"><use href="#i-award"/></svg></span>
+                <div style="min-width:0;flex:1">
+                  <h3>Calendário editorial</h3>
+                  <p class="muted small">Projeto do seu portfólio</p>
+                </div>
+                <span class="tag"><svg class="i" style="width:12px;height:12px"><use href="#i-check"/></svg> Validado por mentor</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="row">
+                <span class="chip orange"><svg class="i"><use href="#i-brief"/></svg></span>
+                <div style="min-width:0;flex:1">
+                  <h3>Convite para vaga</h3>
+                  <p class="muted small">Estágio em social media · Studio Atalaia</p>
+                </div>
+                <span class="tag lilac">Novo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Como funciona -->
+    <section class="block alt" id="como-funciona" aria-labelledby="h-como">
+      <div class="wrap">
+        <span class="kicker">Como funciona</span>
+        <h2 id="h-como">Do primeiro curso à primeira entrevista</h2>
+        <p class="sub">Três passos, no seu ritmo e do seu celular.</p>
+        <div class="steps">
+          <div class="step">
+            <span class="chip lilac"><svg class="i"><use href="#i-cap"/></svg></span>
+            <h3 style="margin-top:16px">1. Estude um curso curto</h3>
+            <p>Aulas em vídeo de 4 a 6 semanas, criadas por mentores que trabalham na área.</p>
+          </div>
+          <div class="step">
+            <span class="chip orange"><svg class="i"><use href="#i-award"/></svg></span>
+            <h3 style="margin-top:16px">2. Faça desafios e ganhe o certificado</h3>
+            <p>Você entrega trabalhos reais. O mentor corrige, e o que for aprovado vira projeto validado no seu portfólio.</p>
+          </div>
+          <div class="step">
+            <span class="chip mint"><svg class="i"><use href="#i-brief"/></svg></span>
+            <h3 style="margin-top:16px">3. Apareça para as empresas</h3>
+            <p>No Banco de Talentos, empresas da região veem seus projetos e podem convidar você para uma vaga.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Para mentores -->
+    <section class="block" id="mentores" aria-labelledby="h-mentor">
+      <div class="wrap split">
+        <div class="copy">
+          <span class="kicker">Para mentores</span>
+          <h2 id="h-mentor">Ensine o que você sabe e receba pelas vendas</h2>
+          <p class="sub">Crie seu curso, grave as aulas e acompanhe tudo pelo painel. A plataforma cuida da cobrança.</p>
+          <ul class="list">
+            <li><svg class="i"><use href="#i-check"/></svg><span>Você cria o curso e define o preço. Cada venda é dividida entre você e o Hub+.</span></li>
+            <li><svg class="i"><use href="#i-check"/></svg><span>Carteira com saldo e extrato. Você saca por Pix depois da janela de garantia de 7 dias.</span></li>
+            <li><svg class="i"><use href="#i-check"/></svg><span>Você corrige os desafios e valida os projetos dos alunos.</span></li>
+          </ul>
+          <div class="actions">
+            <a class="btn primary" href="#">Quero ensinar <svg class="i"><use href="#i-arrow"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <div class="art" aria-hidden="true">
+            <div class="card">
+              <p class="muted small">Saldo disponível</p>
+              <p style="font:800 30px var(--font-head);letter-spacing:-.02em;margin-top:2px">R$ 1.240,00</p>
+              <div class="row" style="margin-top:14px;justify-content:space-between">
+                <span class="muted small">A liberar: R$ 380,00</span>
+                <span class="btn primary sm" style="height:34px">Sacar por Pix</span>
+              </div>
+            </div>
+            <div class="card offset">
+              <div class="row">
+                <span class="chip mint"><svg class="i"><use href="#i-wallet"/></svg></span>
+                <div style="min-width:0;flex:1">
+                  <h3>Nova venda</h3>
+                  <p class="muted small">Social media para pequenos negócios</p>
+                </div>
+                <b class="small">+ R$ 79,00</b>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Para empresas -->
+    <section class="block alt" id="empresas" aria-labelledby="h-empresa">
+      <div class="wrap split flip">
+        <div class="copy">
+          <span class="kicker">Para empresas</span>
+          <h2 id="h-empresa">Encontre jovens que já provaram o que sabem fazer</h2>
+          <p class="sub">O Banco de Talentos reúne jovens de Sergipe com projetos validados por mentores.</p>
+          <ul class="list">
+            <li><svg class="i"><use href="#i-check"/></svg><span>Busque por área, cidade e bairro e veja o portfólio de cada jovem.</span></li>
+            <li><svg class="i"><use href="#i-check"/></svg><span>Convide para uma vaga. O contato direto só aparece depois que o jovem aceita.</span></li>
+            <li><svg class="i"><use href="#i-check"/></svg><span>O cadastro da empresa é feito pela nossa equipe, e você escolhe quem gerencia a conta.</span></li>
+          </ul>
+          <div class="actions">
+            <a class="btn primary" href="mailto:hubmaised@gmail.com?subject=Cadastro%20de%20empresa%20no%20Hub%2B"><svg class="i"><use href="#i-mail"/></svg> Fale conosco</a>
+            <a class="btn secondary" href="https://www.instagram.com/hub.mais" target="_blank" rel="noopener"><svg class="i"><use href="#i-insta"/></svg> @hub.mais</a>
+          </div>
+          <p class="fine">Escreva para hubmaised@gmail.com com o CNPJ e o nome de quem vai gerenciar a conta.</p>
+        </div>
+        <div>
+          <div class="art" aria-hidden="true">
+            <div class="card">
+              <div class="row">
+                <span class="chip lilac" style="border-radius:50%;width:44px;height:44px;font:600 13px var(--font-head)">AS</span>
+                <div style="min-width:0;flex:1">
+                  <h3>Ana S.</h3>
+                  <p class="muted small"><svg class="i" style="width:12px;height:12px;vertical-align:-1px"><use href="#i-pin"/></svg> Atalaia, Aracaju · 21 anos</p>
+                </div>
+              </div>
+              <p class="small" style="margin-top:12px">Social media e conteúdo para pequenos negócios.</p>
+              <div class="row" style="margin-top:12px;gap:8px;flex-wrap:wrap">
+                <span class="tag"><svg class="i" style="width:12px;height:12px"><use href="#i-check"/></svg> 2 projetos validados</span>
+                <span class="tag lilac">1 certificado</span>
+              </div>
+              <div class="row" style="margin-top:14px;justify-content:space-between;gap:8px;flex-wrap:wrap">
+                <span class="muted small"><svg class="i" style="width:12px;height:12px;vertical-align:-1px"><use href="#i-lock"/></svg> Contato liberado após o aceite</span>
+                <span class="btn primary sm" style="height:34px">Convidar para vaga</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Chamada final -->
+    <section class="final" aria-labelledby="h-final" style="padding-top:48px">
+      <div class="wrap">
+        <div class="box">
+          <div>
+            <h2 id="h-final">Comece pelo seu primeiro curso</h2>
+            <p>Crie sua conta em menos de um minuto. Não pedimos CPF para estudar.</p>
+          </div>
+          <a class="btn" href="#">Criar conta <svg class="i"><use href="#i-arrow"/></svg></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <div>
+        <a class="brand" href="#topo"><img src="../images/logo-hubmais-instagram.jpg" alt="" width="32" height="32"><b>Hub+</b></a>
+        <p class="muted" style="margin-top:12px;max-width:320px">Formando, conectando e transformando jovens de Sergipe.</p>
+      </div>
+      <div>
+        <h3>Plataforma</h3>
+        <ul>
+          <li><a href="#">Explorar cursos</a></li>
+          <li><a href="#">Criar conta</a></li>
+          <li><a href="#">Entrar</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Fale conosco</h3>
+        <ul>
+          <li><a href="mailto:hubmaised@gmail.com"><svg class="i"><use href="#i-mail"/></svg> hubmaised@gmail.com</a></li>
+          <li><a href="https://www.instagram.com/hub.mais" target="_blank" rel="noopener"><svg class="i"><use href="#i-insta"/></svg> @hub.mais</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="wrap"><p class="copy">© Hub+ · Sergipe</p></div>
+  </footer>
+</div>
+
+<script>
+  // Controles do protótipo: tema e largura. Não fazem parte da página.
+  const root = document.documentElement;
+  const stage = document.getElementById('stage');
+  const mark = (attr, value) =>
+    document.querySelectorAll(`[${attr}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.getAttribute(attr) === value)));
+  const setTheme = (t) => { root.setAttribute('data-theme', t); mark('data-theme-set', t); };
+  const dark = () => matchMedia('(prefers-color-scheme: dark)').matches;
+  setTheme(dark() ? 'dark' : 'light');
+  document.querySelectorAll('[data-theme-set]').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.themeSet)));
+  document.querySelector('[data-theme-toggle]').addEventListener('click', () => setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+  document.querySelectorAll('[data-w-set]').forEach((b) => b.addEventListener('click', () => { stage.dataset.w = b.dataset.wSet; mark('data-w-set', b.dataset.wSet); }));
+  const query = new URLSearchParams(location.search);
+  if (query.get('theme')) setTheme(query.get('theme'));
+  if (query.get('w')) { stage.dataset.w = query.get('w'); mark('data-w-set', query.get('w')); }
+</script>
+</body>
+</html>

@@ -406,7 +406,8 @@ function MentorDashboard() {
 export function HomePage() {
   const { user, onboarding } = useAuth()
 
-  if (!user) return <Navigate to="/explore" replace />
+  // Visitante sem login vê a página inicial pública (RootPage), nunca este painel.
+  if (!user) return null
   if (onboarding?.required && !onboarding.completed) return <Navigate to="/onboarding" replace />
   if (user.role === 'admin') return <Navigate to="/admin" replace />
   if (user.role === 'mentor') return <MentorDashboard />

@@ -36,7 +36,7 @@ export function StudentOnboarding() {
 
   async function finish() {
     await queryClient.invalidateQueries({ queryKey: ['me'] })
-    navigate('/', { replace: true })
+    navigate('/painel', { replace: true })
   }
 
   const skip = useMutation({

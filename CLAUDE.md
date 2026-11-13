@@ -94,7 +94,7 @@ pnpm dev
 
 - `api/src/auth`: CASL (perfis e permissões). `api/src/http/routes`: auth, profile, company, admin-companies, courses, learning, challenges, portfolio, talents, dashboard, checkout (+ webhook), wallet. `api/src/services`: `payment-gateway`, `wallet` (ledger e saques), `orders`, `storage` (R2), `certificates`, `access`, `onboarding`, `company-access` (convites e troca de responsável). `api/src/utils`: senha, slug, documentos (CPF, CNPJ, Pix).
 - `api/tests`: `flow` (MVP), `onboarding`, `company` (cadastro pelo Hub+, convite, troca de responsável), `course-builder`, `engagement` (desafios, certificado, portfólio, talentos), `dashboard`. Os testes rodam contra o Postgres local (`pnpm test`).
-- `web/src/pages`: telas por área (`onboarding`, `mentor`, `student`, `company`, `admin`). `web/src/components/ui`: componentes no estilo shadcn. `web/src/components`: `layout` (shell por perfil), `dropzone`, `onboarding-shell`, `week-bars`. `web/src/index.css`: tokens do design system.
+- `web/src/pages`: telas por área (`onboarding`, `mentor`, `student`, `company`, `admin`), mais `landing` (página inicial pública em `/`, igual com ou sem login, D25). O painel de cada perfil fica em `/painel`. As telas autenticadas carregam sob demanda em `App.tsx`. `web/src/components/ui`: componentes no estilo shadcn. `web/src/components`: `layout` (shell por perfil), `dropzone`, `onboarding-shell`, `week-bars`. `web/src/index.css`: tokens do design system.
 
 ## Armadilhas conhecidas
 

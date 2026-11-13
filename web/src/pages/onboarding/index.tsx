@@ -13,7 +13,7 @@ export function OnboardingPage() {
 
   if (isLoading) return <Loading />
   if (!user) return <Navigate to="/login" replace />
-  if (!onboarding?.path || onboarding.completed) return <Navigate to="/" replace />
+  if (!onboarding?.path || onboarding.completed) return <Navigate to="/painel" replace />
 
   if (user.role === 'mentor') return <MentorOnboarding />
   if (user.role === 'company') return <CompanyNoAccess />

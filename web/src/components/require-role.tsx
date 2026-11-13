@@ -18,7 +18,7 @@ export function RequireRole({ roles, allowPendingOnboarding = false }: { roles: 
   }
 
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
-  if (!roles.includes(user.role)) return <Navigate to="/" replace />
+  if (!roles.includes(user.role)) return <Navigate to="/painel" replace />
   // Mentor sem carteira aberta e empresa sem cadastro precisam concluir o onboarding antes (D12).
   if (!allowPendingOnboarding && onboarding?.required && !onboarding.completed) return <Navigate to="/onboarding" replace />
 
