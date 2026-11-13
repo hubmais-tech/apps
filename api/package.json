@@ -8,6 +8,7 @@
     "dev": "tsx watch --env-file .env src/http/server.ts",
     "build": "tsc --noEmit",
     "start": "tsx --env-file .env src/http/server.ts",
+    "bundle": "esbuild server=src/http/server.ts migrate=src/database/migrate.ts seed=src/database/seed.ts --bundle --platform=node --format=esm --target=node22 --packages=external --sourcemap --outdir=dist",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx --env-file .env src/database/seed.ts",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@types/node": "^24.10.0",
     "drizzle-kit": "^0.31.6",
+    "esbuild": "^0.28.2",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"

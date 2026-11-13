@@ -6,9 +6,9 @@ Elaborado em 2026-11-12, com o papel de Scrum Master, a partir do código e dos 
 
 ## 1. Resumo para o Product Owner
 
-- Cada item tem história de usuário, checklist de critérios de aceitação e casos de teste em Dado, Quando e Então (**384 casos de teste no total**).
+- Cada item tem história de usuário, checklist de critérios de aceitação e casos de teste em Dado, Quando e Então (**380 casos de teste no total**).
 - O produto tem as **fases 1 a 6 e o onboarding por perfil prontos** e testados (81 testes na API). O que falta não é "mais funcionalidades": é **colocar em operação com segurança**, **fechar os modelos de receita que dependem de decisões** e **evoluir a experiência**.
-- O backlog tem **15 épicos e 109 itens, somando 618 pontos**. O **go/no-go do piloto fechado** é ao fim da Sprint 5 (152 pontos em 5 sprints de 2 semanas, com a velocidade assumida de 30). O R1 completo tem 196 pontos, cerca de 7 sprints.
+- O backlog tem **15 épicos e 108 itens, somando 613 pontos**. O **go/no-go do piloto fechado** é ao fim da Sprint 5 (147 pontos em 5 sprints de 2 semanas, com a velocidade assumida de 30). O R1 completo tem 191 pontos, cerca de 7 sprints.
 - **14 decisões em aberto** travam itens (seção 9). A maior parte é resolvida por spikes na própria Sprint 1 (hospedagem, e-mail, nota fiscal, menores de 18, Pix no Stripe). **Só a N5, a política de reembolso depois dos 7 dias, não tem spike que a resolva: ela precisa de decisão sua antes da Sprint 2.** As demais ganham uma recomendação na Sprint 1, que você aprova. Os spikes dependem de terceiros (contador, jurídico, provedores), então agende essas conversas antes de a sprint começar.
 - Três riscos críticos de negócio antes de cobrar o primeiro real: **obrigação fiscal** (N4), **reembolso em 7 dias feito pelo aluno** (direito de arrependimento) e **CPF e chave Pix guardados sem criptografia**.
 
@@ -60,6 +60,7 @@ Montei o plano com estas suposições. Se alguma estiver errada, muda o plano.
 | 2026-11-12 | **Relatório de impacto e selos** ficam para depois do MVP (D24) | Itens movidos para o épico E16, release Pós-MVP: relatório de impacto, selo e transparência do apoiador, coleta de dados de impacto e selos das empresas. Planos, doações e bolsas continuam no R3 |
 
 | 2026-11-12 | **Página inicial pública** (E12-S01) entregue, sem a seção de cursos em destaque (fase inicial, ainda há poucos cursos) | Item removido do backlog. O botão de empresas virou "Fale conosco" (e-mail e Instagram), porque empresa não se cadastra sozinha (D23). Decisão D25 |
+| 2026-11-12 | **Dockerfiles, compose de produção, config em tempo de execução e rota `/health/ready`** entregues (D26) | E01-S03 saiu do backlog. O workflow de CI (`.github/workflows/ci.yml`) existe, mas só vale como entregue quando rodar no GitHub, bloquear o merge e ganhar o selo no README: E01-S01 continua aberto. E01-S07 já tem a parte de health com banco |
 ## 4. Definições de trabalho
 
 ### Definição de Pronto para entrar na sprint (DoR)
@@ -103,7 +104,7 @@ Onde o negócio ainda não decidiu, os casos de teste usam **valores de exemplo*
 
 | Épico | Release | Prioridade | Itens | Pontos | Decisões que bloqueiam |
 |---|---|---|---|---|---|
-| **E01** Fundação de engenharia e operação | R1 | P0 Crítica | 9 | 38 | N1 |
+| **E01** Fundação de engenharia e operação | R1 | P0 Crítica | 8 | 33 | N1 |
 | **E02** Pagamentos reais e financeiro | R1 | P0 Crítica | 11 | 52 | A9, N5, A14 |
 | **E03** Segurança, privacidade e LGPD | R1 | P0 Crítica | 10 | 53 | — |
 | **E04** Contas e comunicação | R1 | P0 Crítica | 9 | 39 | A11 |
@@ -119,13 +120,13 @@ Onde o negócio ainda não decidiu, os casos de teste usam **valores de exemplo*
 | **E16** Relatório de impacto e selos (pós-MVP) | PM | P3 Baixa | 4 | 24 | A10 |
 | **E14** Melhorias e dívida técnica identificadas | R2 | P2 Média | 6 | 18 | — |
 
-Total: **109 itens e 618 pontos**.
+Total: **108 itens e 613 pontos**.
 
 ## 6. Releases e roteiro
 
 | Release | Objetivo | Pontos | Sprints (a 30 pts) |
 |---|---|---|---|
-| **R1 · Piloto fechado** | Colocar uma turma piloto de Aracaju para usar a plataforma de verdade, com pagamento real, dados protegidos e operação sob controle. | 196 | 7 |
+| **R1 · Piloto fechado** | Colocar uma turma piloto de Aracaju para usar a plataforma de verdade, com pagamento real, dados protegidos e operação sob controle. | 191 | 7 |
 | **R2 · Lançamento público** | Abrir para o público com catálogo rico, comunicação, curadoria e ferramentas de suporte. | 301 | 11 |
 | **R3 · Receita corporativa** | Ligar os modelos de receita que dependem de decisões de negócio: planos, doações, bolsas e taxa de contratação. | 97 | 4 |
 | **Pós-MVP · Versões futuras** | Itens que o responsável do produto decidiu deixar para depois do MVP: relatório de impacto social e selos. | 24 | 1 |
@@ -151,14 +152,13 @@ Os itens de R1 que **não** entram nesse critério (por exemplo Pix assíncrono,
 
 Capacidade assumida: 30 pontos. Sprints acima disso estão sinalizadas.
 
-### Sprint 1 · 30 pontos
+### Sprint 1 · 25 pontos
 
 **Meta:** Alicerce e prova de pagamento: CI, containers, hospedagem escolhida, Stripe validado, R2 e e-mail definidos, pareceres fiscal e de menores.
 
 | Item | Tipo | Pts | Decisão |
 |---|---|---|---|
 | E01-S01 Configurar CI no GitHub Actions para API e front-end | Task | 5 | — |
-| E01-S03 Criar Dockerfiles da API e do front-end | Task | 5 | — |
 | E01-S04 Escolher a hospedagem de produção | Spike | 3 | resolve N1 |
 | E02-S01 Validar o Stripe ponta a ponta em modo de teste | Task | 5 | resolve A9 |
 | E02-S11 Ativar a conta do Stripe em produção | Task | 2 | — |
@@ -249,7 +249,7 @@ Entram na Sprint 8, depois de recalibrar a velocidade com os dados reais das spr
 
 ### E01 · Fundação de engenharia e operação
 
-**Release:** R1 · Piloto fechado · **Prioridade:** P0 Crítica · **9 itens, 38 pontos**
+**Release:** R1 · Piloto fechado · **Prioridade:** P0 Crítica · **8 itens, 33 pontos**
 
 **Objetivo:** Qualquer mudança passa por CI, sobe em ambientes previsíveis e pode ser observada e recuperada.
 
@@ -334,48 +334,6 @@ Como pessoa que desenvolve o Hub+, quero lint e formatação padronizados nos do
 
 **Depende de:** E01-S01 (Configurar CI no GitHub Actions para API e front-end)
 
-#### [P0] Criar Dockerfiles da API e do front-end
-
-**Código:** E01-S03 · **Tipo:** Task · **Pontos:** 5 · **Release:** R1 · **Sprint:** 1
-
-**História de usuário**
-
-Como time do Hub+, quero imagens Docker reproduzíveis da API e do front-end, para publicar o mesmo artefato em qualquer ambiente.
-
-**Checklist de critérios de aceitação**
-
-- [ ] Dockerfile da API com build em múltiplos estágios e `HEALTHCHECK`.
-- [ ] Front-end servido como estático com fallback para `index.html` (rotas do React Router).
-- [ ] `docker compose` de produção-like sobe API, banco e web localmente.
-- [ ] Imagens sem segredos embutidos.
-
-**Casos de teste**
-
-*CT-01 — Imagem da API roda sem root e com healthcheck*
-
-- **Dado que** a imagem da API construída pelo Dockerfile
-- **Quando** o contêiner for iniciado com as variáveis obrigatórias
-- **Então** o processo roda com usuário não root e o HEALTHCHECK passa para "healthy" em até 60 segundos.
-
-*CT-02 — Rotas do React Router funcionam no estático*
-
-- **Dado que** o contêiner do front-end em execução
-- **Quando** alguém acessar direto /courses/qualquer-slug
-- **Então** o servidor devolve index.html com status 200 e o front-end abre a página do curso.
-
-*CT-03 — Compose de produção sobe o conjunto*
-
-- **Dado que** o docker compose de produção-like
-- **Quando** ele for iniciado do zero
-- **Então** API, banco e front-end ficam saudáveis, a migração é aplicada e o login de uma conta de teste funciona.
-
-*CT-04 — Imagens sem segredos embutidos*
-
-- **Dado que** as imagens da API e do front-end construídas
-- **Quando** forem inspecionadas com docker history e docker inspect
-- **Então** nenhuma camada ou variável contém JWT_SECRET, chave do Stripe ou chave do R2.
-
-
 #### [P0] Escolher a hospedagem de produção
 
 **Código:** E01-S04 · **Tipo:** Spike · **Pontos:** 3 · **Release:** R1 · **Sprint:** 1
@@ -455,7 +413,7 @@ Como time do Hub+, quero que cada mudança seja publicada automaticamente em sta
 - **Então** a versão anterior volta a atender, o tempo gasto é medido e registrado, e o procedimento é anotado como testado uma vez.
 
 
-**Depende de:** E01-S03 (Criar Dockerfiles da API e do front-end); E01-S04 (Escolher a hospedagem de produção)
+**Depende de:** E01-S04 (Escolher a hospedagem de produção)
 
 **Bloqueada pela decisão:** N1: Hospedagem de produção (API, banco e front-end)
 

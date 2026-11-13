@@ -18,9 +18,10 @@ Os fluxos completos de cada perfil estão em [docs/FLOWS.md](docs/FLOWS.md).
 ## Estrutura
 
 ```
-api/    Backend (Fastify, Drizzle, Postgres, CASL, Stripe, Cloudflare R2)
-web/    Front-end (React, Vite, Tailwind v4, TanStack Query, React Router)
-docs/   Plano, decisões, fluxos, API, modelo de dados e protótipo de design
+api/    Backend (Fastify, Drizzle, Postgres, CASL, Stripe, Cloudflare R2), com Dockerfile
+web/    Front-end (React, Vite, Tailwind v4, TanStack Query, React Router), com Dockerfile
+docs/   Plano, decisões, fluxos, API, modelo de dados, deploy e protótipos de design
+docker-compose.yml   Stack completa (Postgres, API e front-end) para deploy
 ```
 
 ## Stack
@@ -72,6 +73,16 @@ pnpm dev
 
 `pnpm build` no `web/` faz a checagem de tipos e gera o pacote de produção.
 
+## Deploy com Docker
+
+```bash
+cp .env.example .env          # preencher
+docker compose up -d --build
+docker compose exec api node dist/seed.js     # primeiro admin
+```
+
+As migrações rodam sozinhas na partida da API. Variáveis, hospedagem, backup e limites: [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## Configuração
 
 - **Pagamento em desenvolvimento:** `PAYMENT_GATEWAY=fake` (padrão) simula o pagamento por uma tela local. É proibido em produção: a API não sobe.
@@ -104,6 +115,7 @@ Tema claro por padrão, escuro opcional. Painel de SaaS limpo, com o roxo `#5900
 | [docs/FLOWS.md](docs/FLOWS.md) | Fluxos de cada perfil, do cadastro ao resultado |
 | [docs/API.md](docs/API.md) | Referência das rotas |
 | [docs/DATA-MODEL.md](docs/DATA-MODEL.md) | Tabelas e regras de dados |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Imagens Docker, variáveis, passo a passo e limites do deploy |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | Backlog, releases, plano de sprints e riscos. Gerado de `docs/jira/` |
 | [CLAUDE.md](CLAUDE.md) | Contexto do projeto para o Claude Code |
 

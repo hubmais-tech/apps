@@ -118,10 +118,11 @@ Dependem de decisões do responsável (ver "Decisões abertas" em `DECISIONS.md`
 
 ## 9. Documentação
 
-- `DECISIONS.md`: decisões tomadas (D1 a D24) e pendentes (A6 a A14).
+- `DECISIONS.md`: decisões tomadas (D1 a D26) e pendentes (A6 a A14).
 - `FLOWS.md`: fluxos de cada perfil, do cadastro ao resultado.
 - `API.md`: referência das rotas.
 - `DATA-MODEL.md`: tabelas e regras de dados.
+- `DEPLOY.md`: imagens Docker, variáveis, passo a passo do deploy e limites (D26).
 - `BACKLOG.md`: backlog por épico, releases, plano das primeiras sprints, decisões que bloqueiam e riscos. Gerado de `jira/backlog.data.mjs`; o CSV de importação do Jira fica em `jira/hub-backlog.csv`.
 - `design/mockup-workspace.html`: protótipo aprovado do design.
 

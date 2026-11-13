@@ -1,0 +1,69 @@
+# Stack completa do Hub+ (Postgres + API + front-end), como em produção.
+# Serve para subir tudo numa VPS simples ou para testar as imagens localmente.
+#   cp .env.example .env     (e preencher)
+#   docker compose up -d --build
+# Passo a passo e variáveis: docs/DEPLOY.md. O Postgres de desenvolvimento continua em api/docker-compose.yml.
+name: hubmais-stack
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hubmais
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: hubmais
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U hubmais -d hubmais']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3333
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+      DATABASE_URL: postgresql://hubmais:${POSTGRES_PASSWORD}@db:5432/hubmais
+      FRONTEND_URL: ${FRONTEND_URL:?Defina FRONTEND_URL no .env}
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no .env}
+      CLOUDFLARE_ENDPOINT: ${CLOUDFLARE_ENDPOINT:?Defina CLOUDFLARE_ENDPOINT no .env}
+      CLOUDFLARE_ACCESS_KEY_ID: ${CLOUDFLARE_ACCESS_KEY_ID:?Defina CLOUDFLARE_ACCESS_KEY_ID no .env}
+      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY:?Defina CLOUDFLARE_SECRET_ACCESS_KEY no .env}
+      CLOUDFLARE_BUCKET_NAME: ${CLOUDFLARE_BUCKET_NAME:?Defina CLOUDFLARE_BUCKET_NAME no .env}
+      CLOUDFLARE_PUBLIC_URL: ${CLOUDFLARE_PUBLIC_URL:?Defina CLOUDFLARE_PUBLIC_URL no .env}
+      PAYMENT_GATEWAY: ${PAYMENT_GATEWAY:-stripe}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      PLATFORM_FEE_PERCENT: ${PLATFORM_FEE_PERCENT:-20}
+      GATEWAY_FEE_PERCENT: ${GATEWAY_FEE_PERCENT:-3.99}
+      GATEWAY_FEE_FIXED_IN_CENTS: ${GATEWAY_FEE_FIXED_IN_CENTS:-39}
+      WALLET_HOLD_DAYS: ${WALLET_HOLD_DAYS:-7}
+      MIN_WITHDRAWAL_IN_CENTS: ${MIN_WITHDRAWAL_IN_CENTS:-5000}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      RUN_SEED: ${RUN_SEED:-false}
+    ports:
+      - '${API_PORT:-3333}:3333'
+
+  web:
+    build: ./web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      # Endereço da API como o navegador enxerga (não o nome interno "api").
+      API_URL: ${API_PUBLIC_URL:?Defina API_PUBLIC_URL no .env}
+    ports:
+      - '${WEB_PORT:-8080}:8080'
+
+volumes:
+  db_data:

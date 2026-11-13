@@ -4,7 +4,7 @@ import { and, eq } from 'drizzle-orm'
 
 import { database } from '@/database/connection'
 import { companyManagerChanges, companyMembers } from '@/database/schema'
-import { env } from '@/env'
+import { frontendUrl } from '@/env'
 
 import { BadRequestError, NotFoundError } from '../http/errors/http-errors'
 
@@ -19,7 +19,7 @@ export function newInvite() {
     token,
     inviteTokenHash: hashInviteToken(token),
     inviteExpiresAt: new Date(Date.now() + INVITE_DAYS * 24 * 60 * 60 * 1000),
-    url: `${env.FRONTEND_URL.split(',')[0]!.trim()}/convite/${token}`,
+    url: `${frontendUrl}/convite/${token}`,
   }
 }
 

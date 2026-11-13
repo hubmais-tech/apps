@@ -6,6 +6,8 @@ const envSchema = z
     PORT: z.coerce.number().default(3333),
     DATABASE_URL: z.url(),
     FRONTEND_URL: z.string(),
+    // Atrás de proxy ou balanceador (deploy), liga para o rate limit usar o IP real da pessoa e não o do proxy.
+    TRUST_PROXY: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
     JWT_SECRET: z.string().min(32),
 
     CLOUDFLARE_ENDPOINT: z.url(),
@@ -44,3 +46,16 @@ const envSchema = z
   })
 
 export const env = envSchema.parse(process.env)
+
+/**
+ * Endereços do front-end. FRONTEND_URL aceita vários, separados por vírgula (ex.: site e www), sem barra no final.
+ * Todos entram no CORS. O primeiro é o principal: base dos links de convite e dos retornos do Stripe.
+ */
+export function parseFrontendOrigins(value: string) {
+  return value
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/+$/, ''))
+    .filter(Boolean)
+}
+export const frontendOrigins = parseFrontendOrigins(env.FRONTEND_URL)
+export const frontendUrl = frontendOrigins[0] ?? env.FRONTEND_URL

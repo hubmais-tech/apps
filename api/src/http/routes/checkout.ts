@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { defineAbilityFor } from '@/auth'
 import { database } from '@/database/connection'
 import { courses, enrollments, orders, users } from '@/database/schema'
-import { env } from '@/env'
+import { env, frontendUrl } from '@/env'
 import { paymentGateway } from '@/services/payment-gateway'
 import { markOrderFailed, markOrderPaid, markOrderRefunded, splitAmount } from '@/services/orders'
 
@@ -60,8 +60,8 @@ export const checkoutRoutes: FastifyPluginAsyncZod = async (app) => {
         title: course.title,
         amountInCents: order.amountInCents,
         buyerEmail: buyer.email,
-        successUrl: `${env.FRONTEND_URL}/courses/${course.slug}/learn?paid=1`,
-        cancelUrl: `${env.FRONTEND_URL}/courses/${course.slug}`,
+        successUrl: `${frontendUrl}/courses/${course.slug}/learn?paid=1`,
+        cancelUrl: `${frontendUrl}/courses/${course.slug}`,
       })
 
       await database.update(orders).set({ gatewayRef: checkout.ref }).where(eq(orders.id, order.id))

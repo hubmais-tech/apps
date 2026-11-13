@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 
-import { env } from '@/env'
+import { env, frontendUrl } from '@/env'
 
 export type CheckoutInput = {
   orderId: string
@@ -98,7 +98,7 @@ class StripeGateway implements PaymentGateway {
 class FakeGateway implements PaymentGateway {
   async createCheckout(input: CheckoutInput) {
     return {
-      url: `${env.FRONTEND_URL}/checkout/fake/${input.orderId}`,
+      url: `${frontendUrl}/checkout/fake/${input.orderId}`,
       ref: `fake_${input.orderId}`,
     }
   }

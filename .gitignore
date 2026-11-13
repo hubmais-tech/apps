@@ -1,1 +1,8 @@
 docs/jira
+
+# Segredos e artefatos locais
+.env
+.env.*
+!.env.example
+node_modules
+dist

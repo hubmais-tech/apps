@@ -274,6 +274,24 @@ A raiz do site (`/`) é **sempre a página inicial pública**, com ou sem login.
 
 Verificado no Chrome com a página real em 360 px, claro e escuro, 4G simulada (1,6 Mbps, 150 ms) e CPU 4 vezes mais lenta: maior elemento visível em cerca de 2,1 s, sem rolagem horizontal e sem falha de contraste de texto. Medido no build de produção local. Falta repetir no staging, quando a hospedagem (N1) estiver definida.
 
+## D26. Empacotamento para deploy (Decidido, 2026-11-12)
+
+Cada projeto tem o próprio `Dockerfile`, e a raiz tem um `docker-compose.yml` com a stack completa (Postgres, API e front-end). **A hospedagem continua em aberto (N1)**: as imagens rodam em qualquer lugar que execute containers (VPS com Compose, Render, Railway, Fly, Coolify). Passo a passo em `docs/DEPLOY.md`.
+
+- **API:** imagem em quatro etapas (dependências, pacote, dependências de produção, final). O pacote é gerado com **esbuild** (`pnpm bundle` gera `dist/server.js`, `dist/migrate.js` e `dist/seed.js`); o `tsx` não roda em produção. Roda como usuário `node`, com `HEALTHCHECK` na rota `/health/ready` (que consulta o banco).
+- **Migrações:** o entrypoint roda `dist/migrate.js` antes de subir o servidor (`RUN_MIGRATIONS=true`, padrão). Usa o migrador do `drizzle-orm`, na mesma tabela do `drizzle-kit migrate`, então o `drizzle-kit` (dependência de desenvolvimento) não vai para a imagem. Com mais de uma réplica, desligue (`RUN_MIGRATIONS=false`) e rode uma vez à parte.
+- **Primeiro admin:** `docker compose exec api node dist/seed.js`, com `SEED_ADMIN_EMAIL` e `SEED_ADMIN_PASSWORD`.
+- **Front-end:** nginx sem privilégios, com fallback do React Router para o `index.html`, cache de um ano nos arquivos com hash e cabeçalhos de segurança. **A URL da API é lida na partida** (`API_URL`, que gera `/config.js`), então a mesma imagem serve staging e produção. `VITE_API_URL` continua valendo em desenvolvimento e como alternativa no build.
+- **Proxy:** `TRUST_PROXY=true` (padrão no compose) faz o rate limit usar o IP real da pessoa, e não o do proxy. Sem isso, todo mundo atrás do proxy dividiria o mesmo limite.
+- **Encerramento:** a API trata SIGTERM (termina as requisições e fecha o banco), então a troca de versão não derruba requisições em andamento.
+- **CI:** `.github/workflows/ci.yml` roda tipos, testes da API (com Postgres de serviço) e builds do front e das duas imagens. Não publica imagem nem faz deploy.
+
+- **Render e Vercel:** a Vercel publica o front como site estático (`web/vercel.json`, com `VITE_API_URL` no ambiente do build); o Render roda a imagem da API. Guia em `docs/DEPLOY.md`, opção C.
+- **`FRONTEND_URL`:** aceita vários endereços separados por vírgula e ignora barra no final. Todos entram no CORS; o primeiro é a base dos convites e dos retornos do Stripe (antes, uma barra a mais quebrava esses links).
+- **`RUN_SEED=true`:** cria o admin na partida (idempotente), para plataformas sem terminal.
+
+Limites conhecidos: rodar **uma réplica** da API (o rate limit guarda os contadores na memória); ainda não há política CSP (o `index.html` tem um script inline do tema); sem e-mail transacional (A11).
+
 ## Decisões abertas
 
 | ID | Pergunta | Situação |

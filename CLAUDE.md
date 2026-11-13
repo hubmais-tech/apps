@@ -6,8 +6,8 @@ Plataforma digital de formação e conexão profissional para jovens de 18 a 26 
 
 Fases 1 a 6 do plano e o onboarding por perfil estão implementados e testados. Falta a fase 2 (planos corporativos, doações, taxa de contratação, e-mail transacional, etc.), que depende de decisões pendentes (A8 a A13). Duas decisões de 2026-11-12: a empresa tem cadastro único feito pelo Hub+ e escolhe quem gerencia a conta (D23, **implementada**: admin cadastra, responsável ativa por convite, só ele gerencia a equipe), e relatório de impacto e selos são pós-MVP (D24). Documentação em `docs/`:
 
-- `PLAN.md`: plano e situação das fases. `DECISIONS.md`: decisões (D1 a D24) e pendências (A6 a A15).
-- `FLOWS.md`: fluxo de cada perfil. `API.md`: rotas. `DATA-MODEL.md`: tabelas.
+- `PLAN.md`: plano e situação das fases. `DECISIONS.md`: decisões (D1 a D26) e pendências (A6 a A15).
+- `FLOWS.md`: fluxo de cada perfil. `API.md`: rotas. `DATA-MODEL.md`: tabelas. `DEPLOY.md`: imagens Docker e deploy (D26).
 - `BACKLOG.md`: backlog do que falta desenvolver. **É gerado:** edite `docs/jira/backlog.data.mjs` e rode `node docs/jira/build.mjs` (gera também o CSV de importação do Jira). Nunca edite o `BACKLOG.md` à mão.
 
 **Ao mudar comportamento, rota ou tabela, atualize o documento correspondente na mesma tarefa.** Decisão nova vai em `DECISIONS.md`; o que ficar em aberto vira item "A" ali.
@@ -98,6 +98,8 @@ pnpm dev
 
 ## Armadilhas conhecidas
 
+- **Deploy (D26):** a API roda em produção pelo pacote do esbuild (`pnpm bundle`), não pelo `tsx`. Imagem em `api/Dockerfile`, stack em `docker-compose.yml` na raiz. O front lê a URL da API de `/config.js` (variável `API_URL` do container), não só do `VITE_API_URL`. Scripts `.sh` precisam de fim de linha LF (`.gitattributes` cuida disso). Atrás de proxy, `TRUST_PROXY=true`, senão o rate limit vê o IP do proxy.
+- Ao testar a stack Docker, use portas que não colidam com as de desenvolvimento (3340, 5173, 5959).
 - Alguns arquivos de teste usam fim de linha CRLF. Edições com várias linhas por script falham sem avisar: use a ferramenta de edição e confira o resultado.
 - Heredoc grande no bash do Windows quebra: crie arquivos com a ferramenta de escrita.
 - O servidor da API não recarrega sozinho com `tsx` sem `watch`. `pnpm dev` usa `watch`.

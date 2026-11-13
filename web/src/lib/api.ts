@@ -9,7 +9,8 @@ export const tokenStorage = {
 }
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3333',
+  // Em produção a URL da API vem do /config.js (gerado na partida do container). VITE_API_URL vale em desenvolvimento.
+  baseURL: window.__HUBMAIS__?.API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3333',
 })
 
 api.interceptors.request.use((config) => {

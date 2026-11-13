@@ -1,0 +1,4 @@
+# Scripts de shell precisam de fim de linha LF, senão quebram dentro dos containers Linux.
+*.sh text eol=lf
+*.template text eol=lf
+Dockerfile text eol=lf

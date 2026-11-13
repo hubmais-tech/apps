@@ -47,6 +47,11 @@ describe('fluxo do MVP', () => {
     await pg.end()
   })
 
+  it('responde nas rotas de saúde, inclusive com o banco (deploy)', async () => {
+    expect((await call(null, 'GET', '/health')).json()).toEqual({ status: 'ok' })
+    expect((await call(null, 'GET', '/health/ready')).json()).toEqual({ status: 'ok' })
+  })
+
   it('não permite cadastro como admin nem como empresa (D23)', async () => {
     const asCompany = await app.inject({
       method: 'POST',
